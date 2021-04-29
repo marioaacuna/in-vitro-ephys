@@ -4,5 +4,5 @@ global GC
 % Read general_configs
 GC = general_configs();
 %%
-addpath(genpath('C:\Repositories\in-vitro-ephys'))
+addpath(genpath(cd()))
 AP_launcher_app()
