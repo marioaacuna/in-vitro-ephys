@@ -50,7 +50,7 @@ for i_data  = 1: columns
     if i_data == 1
        % Sag ratio
       sag_p = min(this_data(finish_bsl:finish_evk));
-      ss = median(this_data(finish_evk - 100:finish_evk));
+      ss = median(this_data(finish_evk - ((50 * SR) / 1000):finish_evk -1));
     end
 end
 % if do_plotting
