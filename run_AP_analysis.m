@@ -62,10 +62,12 @@ end
 %% Write down to Excel
 names_idx = cellfun(@(x) ~isempty(x), names);
 NAMES = names(names_idx);
+pulses = GC.inter_pulse_interval.(experimenter_ID) * GC.current_steps.(experimenter_ID);
+pulses_str = pulses2str(pulses);
 % create table with AP firing rate
 this_date_table = table(repmat(recording_date, size(FR_AP,2),1), 'VariableNames', {'Date'});
 names_table = cell2table(NAMES, 'VariableNames', {'Cell_ID'});
-FR_AP_table = array2table(FR_AP' );
+FR_AP_table = array2table(FR_AP', 'VariableNames',pulses_str);
 amp_AP_table = array2table(amp_AP', 'VariableNames', {'Amplitude'});
 width_AP_table = array2table(width_AP', 'VariableNames',{'Max 1st AP width'});
 Vm_table = array2table(rest_Vm', 'VariableNames',{'Membrane potential'});
@@ -89,6 +91,16 @@ if exist(filename_xlsx, 'file')
 else
     writetable(this_table,filename_xlsx,'Sheet',1, 'Range', 'B1')    
 end
+end
+
+% Helper functions
+function puls_str = pulses2str(pulses)
+pulses_str = cell(0,0);
+for i_p = 1:length(pulses)
+    this_pulse = pulses(i_p);
+    pulses_str{i_p} = mat2str(this_pulse);
+end
+puls_str = pulses_str;
 end
 %%
  %#ok<*AGROW>

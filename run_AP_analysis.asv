@@ -65,7 +65,8 @@ NAMES = names(names_idx);
 % create table with AP firing rate
 this_date_table = table(repmat(recording_date, size(FR_AP,2),1), 'VariableNames', {'Date'});
 names_table = cell2table(NAMES, 'VariableNames', {'Cell_ID'});
-FR_AP_table = array2table(FR_AP' );
+pulses = GC.inter_pulse_interval.(experimenter_ID) * GC.current_steps.(experimenter_ID);
+FR_AP_table = array2table(FR_AP', 'VariableNames',pulses);
 amp_AP_table = array2table(amp_AP', 'VariableNames', {'Amplitude'});
 width_AP_table = array2table(width_AP', 'VariableNames',{'Max 1st AP width'});
 Vm_table = array2table(rest_Vm', 'VariableNames',{'Membrane potential'});

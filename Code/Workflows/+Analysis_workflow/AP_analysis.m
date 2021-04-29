@@ -80,11 +80,13 @@ ft = fittype('smoothingspline');
 
 [fitresult, ~] = fit(pulses(ap_idx(1)-1:ap_idx(end))', FR(ap_idx(1)-1:ap_idx(end)), ft );
 AP_thr = unique(arrayfun(@(y)fzero(@(x)fitresult(x)-1,0),FR(ap_idx(1)-1:ap_idx(end))));
+hold on
 if do_plotting
     plot(pulses(ap_idx(1)-1:ap_idx(end)), FR(ap_idx(1)-1:ap_idx(end)), 'o')
     hold on
     plot(fitresult)
     plot([AP_thr, AP_thr], [1, 1], 'r*')
+    title(name)
     pause
     cla
 end
