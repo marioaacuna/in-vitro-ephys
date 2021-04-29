@@ -69,7 +69,7 @@ function GC = general_configs()
     experimenter_ID = 'Federica';
     GC.raw_data_root_path.(experimenter_ID) = 'V:\Federica\data\all_data\';
     GC.string_file_selection.(experimenter_ID) = 'Amp';
-    GC.path_putput_AP_analysis.(experimenter_ID) = 'M:\Mario\Fede\Data_Fede';
+    GC.path_putput_AP_analysis.(experimenter_ID) = 'V:\Federica\Matlab_revised_traces';
     GC.inter_pulse_interval.(experimenter_ID) = 100;
     GC.current_steps.(experimenter_ID) = [-4,-3,-2,-1,0,1,2,3,4,5];
 
