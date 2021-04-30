@@ -1,6 +1,8 @@
-function run_AP_analysis(experimenter_ID, recording_date, do_plotting, varargin)
-
+function DONE =  run_AP_analysis(experimenter_ID, recording_date, do_plotting, varargin)
+clc
+DONE = 0;
 p = varargin;
+overwrite = p{7};
 % Set global variables
 global GC
 % Read general_configs
@@ -30,6 +32,8 @@ files_in_folder = natsort(files_in_folder);
 str_exptr = GC.string_file_selection.(experimenter_ID);
 is_Amp = cell2mat(cellfun(@(x) sum(ismember(x,str_exptr)) == length(str_exptr) && ~endsWith(x, 'outwave.ibw'), files_in_folder, 'UniformOutput', false));
 files_to_take = files_in_folder(is_Amp);
+is_outwave = cell2mat(cellfun(@(x) sum(ismember(x,str_exptr)) == length(str_exptr) && endsWith(x, 'outwave.ibw'), files_in_folder, 'UniformOutput', false));
+outwaves_files = files_in_folder(is_outwave); 
 
 %% Run analysis
 FR_AP = [];%NaN(length(GC.current_steps.(experimenter_ID)),1);
@@ -44,25 +48,37 @@ for i_exp = 1:length(files_to_take)
     try
         this_exp = files_to_take{i_exp};
         file_to_read = os.path.join(data_path,this_exp);
-        D = IBWread(file_to_read);
+        D = IBWread(file_to_read); % read Voltage traces
+        outwave_file = os.path.join(data_path,outwaves_files{i_exp});
+        O =  IBWread(outwave_file); % read Current traces
+        % take only data that has current steps
+        if size(O.y, 2) ~= size(D.y, 2)
+            disp([this_exp, ' did not correspond to I/O curve'])
+            continue
+        end
         data = D.y;
-        [FR, AM, W, Vm, thr, sr] = Analysis_workflow.AP_analysis(experimenter_ID,  data, do_plotting, this_exp, p);
+        I_traces = O.y;
+        [FR, AM, W, Vm, thr, sr, pulses] = Analysis_workflow.AP_analysis(experimenter_ID,  data,I_traces, do_plotting, this_exp, p);
+%         all_data = Analysis_workflow.AP_analysis(experimenter_ID,  data,I_traces, do_plotting, this_exp, p);
         FR_AP = [FR_AP, FR];
         amp_AP = [amp_AP, AM];
         width_AP = [width_AP, W];
         rest_Vm = [rest_Vm, Vm];
         Firing_threshold = [Firing_threshold, thr];
         SAG_r = [SAG_r, sr];
+        names(i_exp) = {this_exp};
     catch
         continue
     end
-    names(i_exp) = {this_exp};
+   
 end   
 
 %% Write down to Excel
 names_idx = cellfun(@(x) ~isempty(x), names);
 NAMES = names(names_idx);
-pulses = GC.inter_pulse_interval.(experimenter_ID) * GC.current_steps.(experimenter_ID);
+% pulses = GC.inter_pulse_interval.(experimenter_ID) * GC.current_steps.(experimenter_ID);
+% current_pulses = GC.inter_pulse_interval.(experimenter_ID) * GC.current_steps.(experimenter_ID);
+
 pulses_str = pulses2str(pulses);
 % create table with AP firing rate
 this_date_table = table(repmat(recording_date, size(FR_AP,2),1), 'VariableNames', {'Date'});
@@ -81,16 +97,22 @@ filename_xlsx = os.path.join(GC.path_putput_AP_analysis.(experimenter_ID),'AP_fr
 
 %%
 this_table = [this_date_table, names_table,FR_AP_table, amp_AP_table,width_AP_table, Vm_table, Firing_threshold_table, SAG_ratio_table];
-if exist(filename_xlsx, 'file')
+if exist(filename_xlsx, 'file') && ~overwrite
     original = readtable(filename_xlsx);
     sz_or = height(original);
-    range1 = ['B',char(num2str(sz_or+2))];
+    range1 = ['B',char(num2str(sz_or+5))];
 
     writetable(this_table,filename_xlsx,'Sheet',1, 'Range', range1)    
     
 else
-    writetable(this_table,filename_xlsx,'Sheet',1, 'Range', 'B1')    
+    if overwrite
+        delete(filename_xlsx)    
+        writetable(this_table,filename_xlsx,'Sheet',1, 'Range', 'B1')
+    else
+        writetable(this_table,filename_xlsx,'Sheet',1, 'Range', 'B1')    
+    end
 end
+DONE = 1;
 end
 
 % Helper functions
