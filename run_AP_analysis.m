@@ -53,11 +53,15 @@ for i_exp = 1:length(files_to_take)
         O =  IBWread(outwave_file); % read Current traces
         % take only data that has current steps
         if size(O.y, 2) ~= size(D.y, 2)
-            disp([this_exp, ' did not correspond to I/O curve'])
-            continue
+%             disp([this_exp, ' did not correspond to I/O curve'])
+            to_remove = size(O.y, 2) - size(D.y, 2);
+            I_traces = O.y(:,1:end-to_remove);
+%             continue
+        else
+            I_traces = O.y;
         end
         data = D.y;
-        I_traces = O.y;
+        
         [FR, AM, W, Vm, thr, sr, pulses] = Analysis_workflow.AP_analysis(experimenter_ID,  data,I_traces, do_plotting, this_exp, p);
 %         all_data = Analysis_workflow.AP_analysis(experimenter_ID,  data,I_traces, do_plotting, this_exp, p);
         FR_AP = [FR_AP, FR];
@@ -83,6 +87,9 @@ pulses_str = pulses2str(pulses);
 % create table with AP firing rate
 this_date_table = table(repmat(recording_date, size(FR_AP,2),1), 'VariableNames', {'Date'});
 names_table = cell2table(NAMES, 'VariableNames', {'Cell_ID'});
+% delete NaN to adapt to the number of sweeps
+to_delete = length(~isnan(FR_AP(:,1))) - length(pulses_str);
+FR_AP = FR_AP(1:end-to_delete,:);
 FR_AP_table = array2table(FR_AP', 'VariableNames',pulses_str);
 amp_AP_table = array2table(amp_AP', 'VariableNames', {'Amplitude'});
 width_AP_table = array2table(width_AP', 'VariableNames',{'Max 1st AP width'});

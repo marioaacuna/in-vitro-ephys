@@ -52,7 +52,10 @@ AP_threshold = 20;
 hold on
 for i_data  = 1: n_steps 
     this_data = V_traces(:,i_data);
+%     vm_this_trace = median(this_data(1:finish_bsl -10,:));
     median_evoked = median(this_data(finish_bsl:finish_evk));
+%     max_evoked = max(this_data(finish_bsl:finish_bsl+20));
+%     if max_evoked - vm_this_trace > 0, continue, end
     evoked_trace_norm = this_data(finish_bsl : finish_evk)- median_evoked;
     [peaks, loc, ~] = findpeaks(evoked_trace_norm, 'MinPeakHeight', AP_threshold, 'MinPeakDistance', min_distance, 'MaxPeakWidth', max_width, 'MinPeakWidth', 2);
 % %     [peaks, loc, w] = findpeaks(this_data,'MinPeakProminence',1, 'MinPeakHeight', mad(this_data(finish_bsl:finish_evk))*1.5, 'MinPeakDistance', min_distance, 'MaxPeakWidth', max_width);\
@@ -81,6 +84,8 @@ end
 % end
 % determine amplitude of first action potential
 ap_idx = intersect(find(FR), find(~isnan(FR)));
+ap_idx = intersect(ap_idx, find(pulses>0)); % find pulses that are larger than 0 pA to detect an actual AP
+
 if isempty(ap_idx)
     disp([name, ' is most probably an ASTROCYTE'])
 %     amp_AP = NaN;width_AP=NaN; Vm=NaN; AP_thr=NaN; SAG_R=NaN; pulses = NaN;
@@ -89,7 +94,8 @@ end
 trace_to_analyse = V_traces(:,ap_idx(1));
 [ap_peaks, ~, ap_w] = findpeaks(trace_to_analyse, 'MinPeakHeight', AP_threshold, 'MinPeakDistance', min_distance, 'MaxPeakWidth', max_width);
 % amplitude relative to Vm
-Vm = nanmean(trace_to_analyse(1: finish_bsl-1));
+% Vm = nanmean(trace_to_analyse(1: finish_bsl-1));
+Vm = mean(median(V_traces(1:finish_bsl-1,[1: n_steps])));
 amp_AP = (abs(Vm) + ap_peaks(1));
 % half width of the first AP
 width_AP = 1000*(ap_w(1)/SR);
