@@ -92,11 +92,14 @@ if isempty(ap_idx)
     return
 end
 trace_to_analyse = V_traces(:,ap_idx(1));
-[ap_peaks, ~, ap_w] = findpeaks(trace_to_analyse, 'MinPeakHeight', AP_threshold, 'MinPeakDistance', min_distance, 'MaxPeakWidth', max_width);
+median_evoked_first_AP = median(trace_to_analyse(finish_bsl:finish_evk));
+evoked_trace_norm_first_AP = trace_to_analyse(finish_bsl : finish_evk)- median_evoked_first_AP;
+[ap_peaks, ~, ap_w] = findpeaks(evoked_trace_norm_first_AP, 'MinPeakHeight', AP_threshold, 'MinPeakDistance', min_distance, 'MaxPeakWidth', max_width);
 % amplitude relative to Vm
 % Vm = nanmean(trace_to_analyse(1: finish_bsl-1));
 Vm = mean(median(V_traces(1:finish_bsl-1,[1: n_steps])));
-amp_AP = (abs(Vm) + ap_peaks(1));
+amp_AP = (ap_peaks(1)+ abs(Vm) + median_evoked_first_AP);
+% amp_AP = (abs(Vm) + ap_peaks(1));
 % half width of the first AP
 width_AP = 1000*(ap_w(1)/SR);
 
