@@ -42,6 +42,7 @@ width_AP = [];
 rest_Vm = [];
 Firing_threshold = [];
 SAG_r = [];
+A_bump = [];
 % do_plotting = 0;
 names = cell(length(files_to_take),1);
 for i_exp = 1:length(files_to_take)
@@ -62,7 +63,7 @@ for i_exp = 1:length(files_to_take)
         end
         data = D.y;
         
-        [FR, AM, W, Vm, thr, sr, pulses] = Analysis_workflow.AP_analysis(experimenter_ID,  data,I_traces, do_plotting, this_exp, p);
+        [FR, AM, W, Vm, thr, sr, bump,  pulses] = Analysis_workflow.AP_analysis(experimenter_ID,  data,I_traces, do_plotting, this_exp, p);
 %         all_data = Analysis_workflow.AP_analysis(experimenter_ID,  data,I_traces, do_plotting, this_exp, p);
         FR_AP = [FR_AP, FR];
         amp_AP = [amp_AP, AM];
@@ -70,6 +71,7 @@ for i_exp = 1:length(files_to_take)
         rest_Vm = [rest_Vm, Vm];
         Firing_threshold = [Firing_threshold, thr];
         SAG_r = [SAG_r, sr];
+        A_bump = [A_bump, bump];
         names(i_exp) = {this_exp};
     catch
         continue
@@ -96,6 +98,7 @@ width_AP_table = array2table(width_AP', 'VariableNames',{'Max 1st AP width'});
 Vm_table = array2table(rest_Vm', 'VariableNames',{'Membrane potential'});
 Firing_threshold_table = array2table(Firing_threshold', 'VariableNames',{'AP threshold'});
 SAG_ratio_table = array2table(SAG_r', 'VariableNames',{'SAG ratio'});
+Bump_table = array2table(A_bump', 'VariableNames',{'AP Bump'});
 % sz_FR = size(FR_AP_table,2);
 % sz_amp = size(amp_AP_table,1);
 % sz_w = size(width_AP_table,1);
@@ -103,7 +106,7 @@ filename_xlsx = os.path.join(GC.path_putput_AP_analysis.(experimenter_ID),'AP_fr
 
 
 %%
-this_table = [this_date_table, names_table,FR_AP_table, amp_AP_table,width_AP_table, Vm_table, Firing_threshold_table, SAG_ratio_table];
+this_table = [this_date_table, names_table,FR_AP_table, amp_AP_table,width_AP_table, Vm_table, Firing_threshold_table, SAG_ratio_table, Bump_table];
 if exist(filename_xlsx, 'file') && ~overwrite
     original = readtable(filename_xlsx);
     sz_or = height(original);
