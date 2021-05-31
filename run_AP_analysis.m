@@ -34,7 +34,7 @@ is_Amp = cell2mat(cellfun(@(x) sum(ismember(x,str_exptr)) == length(str_exptr) &
 files_to_take = files_in_folder(is_Amp);
 is_outwave = cell2mat(cellfun(@(x) sum(ismember(x,str_exptr)) == length(str_exptr) && endsWith(x, 'outwave.ibw'), files_in_folder, 'UniformOutput', false));
 outwaves_files = files_in_folder(is_outwave); 
-
+outwave_identifier = GC.set_string_outwave_selection.(experimenter_ID);
 %% Run analysis
 FR_AP = [];%NaN(length(GC.current_steps.(experimenter_ID)),1);
 amp_AP = [];
@@ -50,7 +50,10 @@ for i_exp = 1:length(files_to_take)
         this_exp = files_to_take{i_exp};
         file_to_read = os.path.join(data_path,this_exp);
         D = IBWread(file_to_read); % read Voltage traces
-        outwave_file = os.path.join(data_path,outwaves_files{i_exp});
+        str_V = strsplit(this_exp,str_exptr);% first characters of the voltage filethat need to match to the Current file
+        start_str_v = [str_V{1}, outwave_identifier] ; 
+        outwave_file_start= char(outwaves_files(startsWith(outwaves_files, start_str_v)));
+        outwave_file = os.path.join(data_path,outwave_file_start);
         O =  IBWread(outwave_file); % read Current traces
         % take only data that has current steps
         if size(O.y, 2) ~= size(D.y, 2)
@@ -73,8 +76,8 @@ for i_exp = 1:length(files_to_take)
         SAG_r = [SAG_r, sr];
         A_bump = [A_bump, bump];
         names(i_exp) = {this_exp};
-    catch
-        continue
+    catch 
+       continue
     end
    
 end   

@@ -144,19 +144,27 @@ pos_zx = zx(yx(:,1)>=0 & yx(:,2)<0);
 % end
 
 points = [ap_locs(1) + finish_bsl + zx(1) , ap_locs(1) + finish_bsl + zx(2), ap_locs(1) + finish_bsl + zx(3)];
-
-if AP_loc + zx(3) > ap_locs(2) || (zx(2) - zx(1)) < 5 % if the distance of the third intersection is larger than the position of the second AP, give a NaN; or if the difference between 0-crossings is lowere than 5 points
-    A_bump = NaN;
+if length(ap_locs) ~= 1 % In case a sweep has only one action potential, calculate bump directly
+    if AP_loc + zx(3) > ap_locs(2) || (zx(2) - zx(1)) < 5 % if the distance of the third intersection is larger than the position of the second AP, give a NaN; or if the difference between 0-crossings is lower than 5 points
+        A_bump = NaN;
+    else
+        bump = trace_to_analyse(points(1): points(3));
+        A_bump = abs(abs(max(bump)) - abs(min(bump)));
+        
+        %     if startsWith(name, 't76'), keyboard, end
+        % %     figure, plot(trace_to_analyse)
+        %     figure, plot(trace_to_analyse(points(1): points(3)))
+        % %     hold on
+        % %     plot([AP_loc + zx(1) + finish_bsl, AP_loc + zx(1) + finish_bsl], [-100 40], 'r--')
+        %     title (name)
+    end
 else
-    bump = trace_to_analyse(points(1): points(3));
-    A_bump = abs(abs(max(bump)) - abs(min(bump)));
-    
-%     if startsWith(name, 't76'), keyboard, end
-% %     figure, plot(trace_to_analyse)
-%     figure, plot(trace_to_analyse(points(1): points(3)))
-% %     hold on
-% %     plot([AP_loc + zx(1) + finish_bsl, AP_loc + zx(1) + finish_bsl], [-100 40], 'r--')
-%     title (name)
+    if (zx(2) - zx(1)) < 5 % If the distnace of the base (first crossing) and the second crossing is less than 5 points
+        A_bump = NaN;
+    else
+        bump = trace_to_analyse(points(1): points(3));
+        A_bump = abs(abs(max(bump)) - abs(min(bump)));
+    end
 end
 
 
