@@ -32,7 +32,8 @@ files_in_folder = natsort(files_in_folder);
 str_exptr = GC.string_file_selection.(experimenter_ID);
 is_Amp = cell2mat(cellfun(@(x) sum(ismember(x,str_exptr)) == length(str_exptr) && ~endsWith(x, 'outwave.ibw'), files_in_folder, 'UniformOutput', false));
 files_to_take = files_in_folder(is_Amp);
-is_outwave = cell2mat(cellfun(@(x) sum(ismember(x,str_exptr)) == length(str_exptr) && endsWith(x, 'outwave.ibw'), files_in_folder, 'UniformOutput', false));
+% is_outwave = cell2mat(cellfun(@(x) sum(ismember(x,str_exptr)) == length(str_exptr) && endsWith(x, 'outwave.ibw'), files_in_folder, 'UniformOutput', false));
+is_outwave = cell2mat(cellfun(@(x) endsWith(x, 'outwave.ibw'), files_in_folder, 'UniformOutput', false));
 outwaves_files = files_in_folder(is_outwave); 
 outwave_identifier = GC.set_string_outwave_selection.(experimenter_ID);
 %% Run analysis
@@ -53,6 +54,11 @@ for i_exp = 1:length(files_to_take)
         str_V = strsplit(this_exp,str_exptr);% first characters of the voltage filethat need to match to the Current file
         start_str_v = [str_V{1}, outwave_identifier] ; 
         outwave_file_start= char(outwaves_files(startsWith(outwaves_files, start_str_v)));
+        % check for correct identifier
+        if isempty(outwave_file_start)
+            start_str_v = [str_V{1}, str_exptr] ; 
+            outwave_file_start= char(outwaves_files(startsWith(outwaves_files, start_str_v)));       
+        end
         outwave_file = os.path.join(data_path,outwave_file_start);
         O =  IBWread(outwave_file); % read Current traces
         % take only data that has current steps
