@@ -27,8 +27,8 @@ for i_p = 1 : current_steps
     end
 end
 
-if current_steps ~= p{5} || p{6} ~= unique(diff(pulses))
-    disp (['Experiment: ', name, ' needs to be re-analized, due to different number of sweeps, please run the GUI again'])
+if current_steps ~= p{5} || p{6} ~= unique(diff(pulses)) || p{1} ~= size(I_traces,1)
+    disp (['Experiment: ', name, ' has different number of sweeps or different frequency, PLEASE SELECT DIFFERENT PARAMETERS'])
     return
 end
 
