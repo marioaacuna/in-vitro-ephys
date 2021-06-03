@@ -77,6 +77,7 @@ for i_data  = 1: n_steps
        % Sag ratio
       sag_p = min(this_data(finish_bsl:finish_evk));
       ss = median(this_data(finish_evk - ((50 * SR) / 1000):finish_evk -1));
+      Ri = abs((ss*10^-3) / (pulses(i_data)*10^-9)) /1000; % MOhms
     end
 end
 % if do_plotting
@@ -203,8 +204,9 @@ varargout{1} = FR;
 varargout{2} = amp_AP;
 varargout{3} = width_AP;
 varargout{4} = Vm;
-varargout{5} = AP_thr;
-varargout{6} = SAG_R;
-varargout{7} = A_bump;
-varargout{8} = pulses;
+varargout{5} = Ri;
+varargout{6} = AP_thr;
+varargout{7} = SAG_R;
+varargout{8} = A_bump;
+varargout{9} = pulses;
 

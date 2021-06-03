@@ -41,6 +41,7 @@ FR_AP = [];%NaN(length(GC.current_steps.(experimenter_ID)),1);
 amp_AP = [];
 width_AP = [];
 rest_Vm = [];
+input_R = [];
 Firing_threshold = [];
 SAG_r = [];
 A_bump = [];
@@ -72,12 +73,13 @@ for i_exp = 1:length(files_to_take)
         end
         data = D.y;
         
-        [FR, AM, W, Vm, thr, sr, bump,  pulses] = Analysis_workflow.AP_analysis(experimenter_ID,  data,I_traces, do_plotting, this_exp, p);
+        [FR, AM, W, Vm, Ri, thr, sr, bump,  pulses] = Analysis_workflow.AP_analysis(experimenter_ID,  data,I_traces, do_plotting, this_exp, p);
 %         all_data = Analysis_workflow.AP_analysis(experimenter_ID,  data,I_traces, do_plotting, this_exp, p);
         FR_AP = [FR_AP, FR];
         amp_AP = [amp_AP, AM];
         width_AP = [width_AP, W];
         rest_Vm = [rest_Vm, Vm];
+        input_R = [input_R, Ri];
         Firing_threshold = [Firing_threshold, thr];
         SAG_r = [SAG_r, sr];
         A_bump = [A_bump, bump];
@@ -105,6 +107,7 @@ FR_AP_table = array2table(FR_AP', 'VariableNames',pulses_str);
 amp_AP_table = array2table(amp_AP', 'VariableNames', {'Amplitude'});
 width_AP_table = array2table(width_AP', 'VariableNames',{'Max 1st AP width'});
 Vm_table = array2table(rest_Vm', 'VariableNames',{'Membrane potential'});
+Ri_table = array2table(input_R', 'VariableNames',{'Input Resistance (MOhm)'});
 Firing_threshold_table = array2table(Firing_threshold', 'VariableNames',{'AP threshold'});
 SAG_ratio_table = array2table(SAG_r', 'VariableNames',{'SAG ratio'});
 Bump_table = array2table(A_bump', 'VariableNames',{'AP Bump'});
@@ -115,7 +118,7 @@ filename_xlsx = os.path.join(GC.path_putput_AP_analysis.(experimenter_ID),'AP_fr
 
 
 %%
-this_table = [this_date_table, names_table,FR_AP_table, amp_AP_table,width_AP_table, Vm_table, Firing_threshold_table, SAG_ratio_table, Bump_table];
+this_table = [this_date_table, names_table,FR_AP_table, amp_AP_table,width_AP_table, Vm_table, Ri_table, Firing_threshold_table, SAG_ratio_table, Bump_table];
 if exist(filename_xlsx, 'file') && ~overwrite
     original = readtable(filename_xlsx);
     sz_or = height(original);
