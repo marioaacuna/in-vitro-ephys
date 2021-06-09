@@ -83,6 +83,21 @@ function GC = general_configs()
     GC.current_steps.(experimenter_ID) = [-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8,9,10,11,12,13];
     GC.set_string_outwave_selection.(experimenter_ID) = 'I_';
     
+<<<<<<< HEAD
+=======
+    %
+    experimenter_ID = 'Niels';
+    GC.raw_data_root_path.(experimenter_ID) = 'V:\Federica\data\all_data\';
+    GC.string_file_selection.(experimenter_ID) = 'Tuft';
+    GC.path_putput_AP_analysis.(experimenter_ID) = 'V:\Federica\Matlab_revised_traces';
+    GC.inter_pulse_interval.(experimenter_ID) = 100;
+    GC.current_steps.(experimenter_ID) = [-4,-3,-2,-1,0,1,2,3,4,5];
+    GC.set_string_outwave_selection.(experimenter_ID) = 'I1';
+
+    
+    
+    
+>>>>>>> 3d79c42480ba38c97692ede325a4db1cac0fb5db
     % Files suffix (files that are common to any experiment)
 %     GC.motion_corrected_file_suffix          = '.mat';
 %     GC.template_motion_corrected_file_suffix = '_motion_correction_template.mat';

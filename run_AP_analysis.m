@@ -13,12 +13,12 @@ data_path_root =  GC.raw_data_root_path.(experimenter_ID); % This needs to be ad
 toolboxes_to_use = {'Igor2Matlab'};
 toggle_toolbox(toolboxes_to_use, 'on')
 switch experimenter_ID
-    case 'Federica'
+    case {'Federica', 'Niels'}
         data_path = os.path.join(data_path_root, recording_date{1}, 'traces');
     case 'Liselot'
         data_path = os.path.join(data_path_root, '2. opto-5HT7', recording_date{1}, [recording_date{1},'.data']);
     otherwise
-        keyboard
+        keyboard 
 end
 % data_path = 'M:\Mario\Fede\traces'; % To be changed later
 data_dir = dir(data_path);
@@ -30,7 +30,11 @@ files_in_folder = natsort(files_in_folder);
 
 % Isolate the files to analyze
 str_exptr = GC.string_file_selection.(experimenter_ID);
-is_Amp = cell2mat(cellfun(@(x) sum(ismember(x,str_exptr)) == length(str_exptr) && ~endsWith(x, 'outwave.ibw'), files_in_folder, 'UniformOutput', false));
+if strcmp(experimenter_ID, 'Niels')
+    is_Amp = cell2mat(cellfun(@(x) sum(ismember(x,str_exptr)) == length(str_exptr)+1 && ~endsWith(x, 'outwave.ibw'), files_in_folder, 'UniformOutput', false));
+else
+    is_Amp = cell2mat(cellfun(@(x) sum(ismember(x,str_exptr)) == length(str_exptr) && ~endsWith(x, 'outwave.ibw'), files_in_folder, 'UniformOutput', false));
+end
 files_to_take = files_in_folder(is_Amp);
 % is_outwave = cell2mat(cellfun(@(x) sum(ismember(x,str_exptr)) == length(str_exptr) && endsWith(x, 'outwave.ibw'), files_in_folder, 'UniformOutput', false));
 is_outwave = cell2mat(cellfun(@(x) endsWith(x, 'outwave.ibw'), files_in_folder, 'UniformOutput', false));
