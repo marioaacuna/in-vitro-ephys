@@ -5,6 +5,7 @@ start_stim = p{2} / 1000;
 testpulse_start = p{3} / 1000;
 testpulse_duration = p{5} / 1000;
 testpulse_amplitude = p{4}; % in pA
+total_duration = p{6};
 global GC
 %% Find peaks
 warning('off')
@@ -28,7 +29,8 @@ for i_p = 1 : current_steps
     end
 end
 current_duration = (sum(I_traces == pulses)-1) / SR;
-if current_duration ~= testpulse_duration || p{4} ~= unique(pulses) || p{1} ~= (size(I_traces,1))
+this_total_duration = (size(I_traces,1)) / SR;
+if current_duration ~= testpulse_duration || p{4} ~= unique(pulses) || p{1} ~= ((size(I_traces,1)) / total_duration) || this_total_duration ~= total_duration
     disp (['Experiment: ', name, ' has different number of sweeps or different frequency, PLEASE SELECT DIFFERENT PARAMETERS'])
     return
 end
@@ -51,9 +53,9 @@ Sweep_ids = Vm;
 
 %%
 % Parameters
-min_distance = 0.008;
+min_distance = 0.005;
 min_width = 10 / SR;
-endpoint = 0.2 * SR;
+endpoint = 0.1 * SR; % 100 ms
 
 hold on
 for i_data  = 1: n_sweeps 
@@ -61,15 +63,21 @@ for i_data  = 1: n_sweeps
     this_data_smoothed = smooth(this_data, SR * 0.001);
     bsl = this_data_smoothed((start_stim*SR) - (0.1*SR) +1  :start_stim*SR - 50);
     median_bsl= median(bsl);
-    this_EPSP_short = this_data_smoothed(start_stim*SR - start_stim*SR +1 :endpoint) - median_bsl;
-    data_start_stim = this_EPSP_short(start_stim*SR :end);
+    this_EPSP_short = this_data_smoothed(start_stim*SR +1 : start_stim*SR + endpoint) - median_bsl;
+%     data_start_stim = this_EPSP_short(start_stim*SR :end);
+    data_start_stim = this_EPSP_short;
     x = (1:length(data_start_stim)) ./ SR;
     [peaks, loc, w] = findpeaks(data_start_stim, x, 'MinPeakProminence', 0.5,  'MinPeakHeight', 0.2, 'MinPeakDistance', min_distance, 'MinPeakWidth', min_width);
+    
+    if isempty(peaks) % if there's no peak
+        continue
+    end
     [~, peak_to_take] = max(peaks);
     this_amp = peaks(peak_to_take);
     % Calculate rise time 
     rise_time = 1000 * risetime(data_start_stim(1:ceil(loc(1)*SR)), SR); % It calculates the rise time to the first peak, if found > 1; in ms
     % Calculate decay time
+    if length(rise_time) > 1, rise_time = NaN;end
     y = data_start_stim(loc(peak_to_take)*SR:end); % Values of voltages from the peak to the end 
     x_d = x(ceil(loc(peak_to_take) *SR) :end);
     f = fit(x_d',y,'exp1');
@@ -77,10 +85,10 @@ for i_data  = 1: n_sweeps
    
     % calculate Slope
 %     above0 = find(data_start_stim > 0,1, 'first');
-    percent_i = peaks(1) * 0.2;
-    percent_f = peaks(1) * 0.8;
-    [~,xi] = min(abs(percent_i-data_start_stim(1: loc(1)*SR)));
-    [~, xf] =  min(abs(percent_f-data_start_stim(1: loc(1)*SR)));
+    percent_i = this_amp(1) * 0.2;
+    percent_f = this_amp(1) * 0.8;
+    [~,xi] = min(abs(percent_i-data_start_stim(1: loc(peak_to_take)*SR)));
+    [~, xf] =  min(abs(percent_f-data_start_stim(1: loc(peak_to_take)*SR)));
     
     dx = xf - xi;
     
@@ -110,9 +118,11 @@ for i_data  = 1: n_sweeps
     % verify this calculation with other datasets, because the arctifact can be different 
     thr = 4 * std(bsl);
     onset_idx = find(data_start_stim > thr, 1, 'first');
+    if isempty (onset_idx) % it could be that there is activity before, increasing the std
+        onset_idx = xi;
+    end
     this_onset = 1000*((start_stim + onset_idx / SR) - start_stim); % ms
-    
-    
+
     % Output parameters
     Vm(i_data) = median_bsl;
     Ri (i_data)= this_R;
@@ -127,7 +137,7 @@ for i_data  = 1: n_sweeps
     
 end
 
-Vm = mean(all_Vms);
+% Vm = mean(all_Vms);
 %% Output arguments
 disp(['good cell : ', name])
 varargout{1} = Sweep_ids;
