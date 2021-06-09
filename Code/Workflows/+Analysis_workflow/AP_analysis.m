@@ -26,8 +26,10 @@ for i_p = 1 : current_steps
         pulses(i_p) = 0;
     end
 end
+this_duration_step = round(sum(I_traces(:,i_p) == this_pulse_points(2))) -1;
+duration_ms = 1000 * this_duration_step / (size(I_traces,1) / p{2});
 
-if current_steps ~= p{5} || p{6} ~= unique(diff(pulses)) || p{1} ~= (size(I_traces,1) / p{2})
+if current_steps ~= p{5} || p{6} ~= unique(diff(pulses)) || p{1} ~= (size(I_traces,1) / p{2}) || p{4} ~= duration_ms
     disp (['Experiment: ', name, ' has different number of sweeps or different frequency, PLEASE SELECT DIFFERENT PARAMETERS'])
     return
 end
@@ -116,7 +118,13 @@ width_AP = 1000*(ap_w(1)/SR);
 % F_derivative = conv(trace_to_analyse, factorial(diff_filter-1)/(-(1/SR))^(diff_filter-1) * g(:,diff_filter), 'same');
 AP_loc = ap_locs(1);
 evoked_trace_norm_first_AP_smoothed = smooth(evoked_trace_norm_first_AP, SR * 0.001);
-F_derivative = diff(evoked_trace_norm_first_AP_smoothed(AP_loc+2:AP_loc+350));% / (1/SR) ; % +250 iniially.
+
+if length(ap_locs) > 1
+    F_derivative = diff(evoked_trace_norm_first_AP_smoothed(AP_loc+2:AP_loc+350));% / (1/SR) ; % +250 iniially.
+elseif length(ap_locs) == 1
+     F_derivative = diff(evoked_trace_norm_first_AP_smoothed(AP_loc+2:end));
+end
+    
 F_der_smoothed= smooth(F_derivative,8);
 F_derivative = F_der_smoothed;
 % normF_der =(F_derivative / F_derivative);%; * max(trace_to_analyse);
