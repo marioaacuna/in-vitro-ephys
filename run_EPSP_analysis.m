@@ -1,8 +1,8 @@
-function DONE =  run_AP_analysis(experimenter_ID, recording_date, do_plotting, varargin)
+function DONE =  run_EPSP_analysis(experimenter_ID, recording_date, do_plotting, varargin)
 clc
 DONE = 0;
 p = varargin;
-overwrite = p{7};
+overwrite = p{6};
 % Set global variables
 global GC
 % Read general_configs
@@ -16,7 +16,7 @@ switch experimenter_ID
     case 'Federica'
         data_path = os.path.join(data_path_root, recording_date{1}, 'traces');
     case 'Liselot'
-        data_path = os.path.join(data_path_root, '2. opto-5HT7', recording_date{1}, [recording_date{1},'.data']);
+        data_path = os.path.join(data_path_root, '10. Norbert', recording_date{1}, [recording_date{1},'.data']);
     otherwise
         keyboard
 end
@@ -37,14 +37,15 @@ is_outwave = cell2mat(cellfun(@(x) endsWith(x, 'outwave.ibw'), files_in_folder, 
 outwaves_files = files_in_folder(is_outwave); 
 outwave_identifier = GC.set_string_outwave_selection.(experimenter_ID);
 %% Run analysis
-FR_AP = [];%NaN(length(GC.current_steps.(experimenter_ID)),1);
-amp_AP = [];
-width_AP = [];
+
+amp_EPSP = [];
+width_EPSP = [];
 rest_Vm = [];
 input_R = [];
-Firing_threshold = [];
-SAG_r = [];
-A_bump = [];
+slope_EPSP = [];
+onset_EPSP = [];
+risetime_EPSP = [];
+decaytime_EPSP = [];
 % do_plotting = 0;
 names = cell(length(files_to_take),1);
 for i_exp = 1:length(files_to_take)
@@ -62,22 +63,14 @@ for i_exp = 1:length(files_to_take)
         end
         outwave_file = os.path.join(data_path,outwave_file_start);
         O =  IBWread(outwave_file); % read Current traces
-        % take only data that has current steps
-        if size(O.y, 2) ~= size(D.y, 2)
-%             disp([this_exp, ' did not correspond to I/O curve'])
-            to_remove = size(O.y, 2) - size(D.y, 2);
-            I_traces = O.y(:,1:end-to_remove);
-%             continue
-        else
-            I_traces = O.y;
-        end
+        I_traces = O.y;
         data = D.y;
         
-        [FR, AM, W, Vm, Ri, thr, sr, bump,  pulses] = Analysis_workflow.AP_analysis(experimenter_ID,  data,I_traces, do_plotting, this_exp, p);
+        [FR, AM, W, Vm, Ri, thr, sr, bump,  pulses] = Analysis_workflow.EPSP_analysis(experimenter_ID,  data,I_traces, do_plotting, this_exp, p);
 %         all_data = Analysis_workflow.AP_analysis(experimenter_ID,  data,I_traces, do_plotting, this_exp, p);
         FR_AP = [FR_AP, FR];
-        amp_AP = [amp_AP, AM];
-        width_AP = [width_AP, W];
+        amp_EPSP = [amp_EPSP, AM];
+        width_EPSP = [width_EPSP, W];
         rest_Vm = [rest_Vm, Vm];
         input_R = [input_R, Ri];
         Firing_threshold = [Firing_threshold, thr];
@@ -104,8 +97,8 @@ names_table = cell2table(NAMES, 'VariableNames', {'Cell_ID'});
 to_delete = length(~isnan(FR_AP(:,1))) - length(pulses_str);
 FR_AP = FR_AP(1:end-to_delete,:);
 FR_AP_table = array2table(FR_AP', 'VariableNames',pulses_str);
-amp_AP_table = array2table(amp_AP', 'VariableNames', {'Amplitude'});
-width_AP_table = array2table(width_AP', 'VariableNames',{'Max 1st AP width'});
+amp_AP_table = array2table(amp_EPSP', 'VariableNames', {'Amplitude'});
+width_AP_table = array2table(width_EPSP', 'VariableNames',{'Max 1st AP width'});
 Vm_table = array2table(rest_Vm', 'VariableNames',{'Membrane potential'});
 Ri_table = array2table(input_R', 'VariableNames',{'Input Resistance (MOhm)'});
 Firing_threshold_table = array2table(Firing_threshold', 'VariableNames',{'AP threshold'});

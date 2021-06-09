@@ -5,4 +5,4 @@ global GC
 GC = general_configs();
 %%
 addpath(genpath(cd()))
-AP_launcher_app()
+main_launcher_app()
