@@ -34,6 +34,10 @@ if current_steps ~= p{5} || p{6} ~= unique(diff(pulses)) || p{1} ~= (size(I_trac
     return
 end
 
+%% Calculation Vm
+Vm = mean(median(V_traces(1:finish_bsl-1,[1: n_steps])));
+
+%% Setting parameters for peak detection
 FR = NaN(length(GC.current_steps.(experimenter_ID)),1);
 n_peaks = FR;
 % origin = 1;
@@ -43,14 +47,8 @@ n_peaks = FR;
 min_distance = 20;
 max_width = 300;
 AP_threshold = 20;
-% Vm_o = nanmean(V_traces(1: finish_bsl-1));
-% if size(V_traces,1) > SR + 1 
-% %     keyboard
-%     return
-% end
-% if do_plotting
-% %     fig1 = figure();
-% end
+
+%%
 hold on
 for i_data  = 1: n_steps 
     this_data = V_traces(:,i_data);
@@ -79,7 +77,9 @@ for i_data  = 1: n_steps
        % Sag ratio
       sag_p = min(this_data(finish_bsl:finish_evk));
       ss = median(this_data(finish_evk - ((50 * SR) / 1000):finish_evk -1));
-      Ri = abs((ss*10^-3) / (pulses(i_data)*10^-9)) /1000; % MOhms
+      abs_Vm = abs(Vm);
+      abs_ss = abs(ss);
+      Ri = abs(((abs_ss - abs_Vm)*10^-3) / (pulses(i_data)*10^-9)) /1000; % MOhms
     end
 end
 % if do_plotting
@@ -94,15 +94,16 @@ if isempty(ap_idx)
 %     amp_AP = NaN;width_AP=NaN; Vm=NaN; AP_thr=NaN; SAG_R=NaN; pulses = NaN;
     return
 end
+
+%% Valuaes of 1st AP
 trace_to_analyse = V_traces(:,ap_idx(1));
 median_evoked_first_AP = median(trace_to_analyse(finish_bsl:finish_evk));
 evoked_trace_norm_first_AP = trace_to_analyse(finish_bsl : finish_evk)- median_evoked_first_AP;
 [ap_peaks, ap_locs, ap_w] = findpeaks(evoked_trace_norm_first_AP, 'MinPeakHeight', AP_threshold, 'MinPeakDistance', min_distance, 'MaxPeakWidth', max_width);
+
 % amplitude relative to Vm
-% Vm = nanmean(trace_to_analyse(1: finish_bsl-1));
-Vm = mean(median(V_traces(1:finish_bsl-1,[1: n_steps])));
 amp_AP = (ap_peaks(1)+ abs(Vm) + median_evoked_first_AP);
-% amp_AP = (abs(Vm) + ap_peaks(1));
+
 % half width of the first AP
 width_AP = 1000*(ap_w(1)/SR);
 
