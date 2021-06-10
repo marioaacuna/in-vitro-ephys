@@ -92,7 +92,7 @@ for i_data  = 1: n_sweeps
     try % it could be that there are no EPSPs detected and then it might 
         rise_time = 1000 * risetime(data_start_stim(1:ceil(loc_max10(1))), SR); % It calculates the rise time to the first peak (during the fist 10ms), if found > 1; in ms
     catch
-        keyboard
+%         keyboard
         rise_time = NaN;
     end
     % Calculate decay time
