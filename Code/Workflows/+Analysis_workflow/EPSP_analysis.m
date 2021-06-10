@@ -67,19 +67,38 @@ for i_data  = 1: n_sweeps
 %     data_start_stim = this_EPSP_short(start_stim*SR :end);
     data_start_stim = this_EPSP_short;
     x = (1:length(data_start_stim)) ./ SR;
-    [peaks, loc, w] = findpeaks(data_start_stim, x, 'MinPeakProminence', 0.5,  'MinPeakHeight', 0.2, 'MinPeakDistance', min_distance, 'MinPeakWidth', min_width);
     
-    if isempty(peaks) % if there's no peak
-        continue
+    % Detect max value within the first 10ms
+    x_10 = 0.01 * SR;
+    [max_10, loc_max10] = max(data_start_stim(1:x_10));
+%     loc_max10 = loc_max10;
+    
+    % Detect Peaks
+    [peaks, loc, w] = findpeaks(data_start_stim, x, 'MinPeakProminence', 0.2,  'MinPeakHeight', 0.5, 'MinPeakDistance', min_distance, 'MinPeakWidth', min_width);
+    
+    
+    if isempty(peaks) || loc(1) > 0.015 % if there's no peak or if the first peak is found later than 15ms
+        [~, peak_to_decay] = max(max_10);
+        loc = loc_max10 / SR;
+        w = NaN;
+    else
+
+        [~, peak_to_decay] = max(peaks);
     end
-    [~, peak_to_take] = max(peaks);
-    this_amp = peaks(peak_to_take);
+    
+    this_amp = max_10;
+%     this_amp = peaks(peak_to_decay);
     % Calculate rise time 
-    rise_time = 1000 * risetime(data_start_stim(1:ceil(loc(1)*SR)), SR); % It calculates the rise time to the first peak, if found > 1; in ms
+    try % it could be that there are no EPSPs detected and then it might 
+        rise_time = 1000 * risetime(data_start_stim(1:ceil(loc_max10(1))), SR); % It calculates the rise time to the first peak (during the fist 10ms), if found > 1; in ms
+    catch
+        keyboard
+        rise_time = NaN;
+    end
     % Calculate decay time
     if length(rise_time) > 1, rise_time = NaN;end
-    y = data_start_stim(loc(peak_to_take)*SR:end); % Values of voltages from the peak to the end 
-    x_d = x(ceil(loc(peak_to_take) *SR) :end);
+    y = data_start_stim(loc(peak_to_decay)*SR:end); % Values of voltages from the peak to the end 
+    x_d = x(ceil(loc(peak_to_decay) *SR) :end);
     f = fit(x_d',y,'exp1');
     decay_time = abs(f.b); % in ms ?
    
@@ -87,21 +106,23 @@ for i_data  = 1: n_sweeps
 %     above0 = find(data_start_stim > 0,1, 'first');
     percent_i = this_amp(1) * 0.2;
     percent_f = this_amp(1) * 0.8;
-    [~,xi] = min(abs(percent_i-data_start_stim(1: loc(peak_to_take)*SR)));
-    [~, xf] =  min(abs(percent_f-data_start_stim(1: loc(peak_to_take)*SR)));
+    [~,xi] = min(abs(percent_i-data_start_stim(1: loc(peak_to_decay)*SR)));
+    [~, xf] =  min(abs(percent_f-data_start_stim(1: loc(peak_to_decay)*SR)));
     
     dx = xf - xi;
-    
+    if dx ~= 0 % happenes when the points are very close together when there's no EPSP
 %     dx = x(loc(1)*SR) - x(above0);
-    slope = unique(gradient([data_start_stim(xi),data_start_stim(xf)]  ,dx/SR*1000));
-    
+        slope = unique(gradient([data_start_stim(xi),data_start_stim(xf)]  ,dx/SR*1000));
+    else
+        slope = NaN;
+    end
     % Get the width
-    this_width = w(peak_to_take);
+    this_width = w(peak_to_decay);
     if do_plotting
         cla
         plot(x, data_start_stim, 'k')
         hold on
-        plot([loc(peak_to_take), loc(peak_to_take)], [peaks(peak_to_take), peaks(peak_to_take)], 'r*')
+        plot(loc_max10/SR, this_amp,  'r*')
         plot(f,x_d,y)
         legend off
         title(['sweep ', num2str(i_data)])
@@ -129,8 +150,8 @@ for i_data  = 1: n_sweeps
     % EPSP parameters
     Amp(i_data) = this_amp;
     Rise_time(i_data) = rise_time;
-    Decay_time(i_data) = decay_time;
-    Slope(i_data) = slope;
+    Decay_time(i_data) = decay_time;  
+    Slope(i_data) = slope; 
     Width(i_data) = this_width;
     Onset(i_data) = this_onset; % to be calculated
     Sweep_ids(i_data) = i_data;

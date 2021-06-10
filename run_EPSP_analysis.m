@@ -50,7 +50,7 @@ else
 end
 
 %% Write data
-
+disp('saving data')
 the_names = unique(DATA.("Date/Cell"));
 
 
@@ -102,6 +102,7 @@ for i_name = 1:length(the_names)
     
 end
 %% DONE
+disp('Done!')
 DONE = 1;
 end
 
