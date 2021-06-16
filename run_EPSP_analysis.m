@@ -60,7 +60,8 @@ for i_name = 1:length(the_names)
     data_fieldnames = fieldnames(DATA);
     data_fieldnames(ismember(data_fieldnames, {'Date/Cell', 'trials', 'Properties', 'Row', 'Variables'})) = [];
     % Loop through trials
-    trials = DATA.trials;
+    data_to_take = ismemberCellRows(DATA.("Date/Cell"), {this_name});
+    trials = DATA.trials(data_to_take);
     n_trials = length(trials);
     for i_trial = 1:n_trials
         this_trial = trials{i_trial};
@@ -76,7 +77,7 @@ for i_name = 1:length(the_names)
         Ri = DATA.("Input Resistance (MOhm)"){idx};
         Vm = DATA.("Membrane potential"){idx};
         % convert back to Table
-        this_table = array2table([sw_id,amp, wd, rt, dt,on, slp, Ri,Vm], 'VariableNames', data_fieldnames);
+        this_table = array2table([sw_id,amp, slp, Ri, Vm, on, wd, rt, dt], 'VariableNames', data_fieldnames);
         
         %% Write to Excel
         if exist(filename_xlsx, 'file') && ~overwrite
@@ -215,7 +216,7 @@ end
         
         
         %%
-        this_table = [this_date_table, names_table,Sweeps_table, Amp_table, Width_table, Rise_table, Decay_table, Onset_table, Slope_table, Ri_table, Vm_table];
+        this_table = [this_date_table, names_table,Sweeps_table, Amp_table, Slope_table,Ri_table, Vm_table, Onset_table, Width_table, Rise_table, Decay_table];
         
         
     end

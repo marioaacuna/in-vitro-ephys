@@ -19,21 +19,50 @@ current_steps = size(I_traces,2);
 %p{5} = nr of sweeps
 %p{6} = inter-sweep interval
 pulses = NaN(1, current_steps);
-for i_p = 1 : current_steps
-    this_pulse_points = unique(I_traces(:,i_p));
-    is_0 = sum(this_pulse_points) == 0;
-    if ~is_0
-        pulses(i_p) = this_pulse_points(this_pulse_points ~= 0);
-    else
-        pulses(i_p) = 0;
+n_pulses = unique(I_traces);
+is_paring_trial = length(n_pulses) == 3; % baseline, AP and hyperpol current
+
+if ~is_paring_trial
+    for i_p = 1 : current_steps
+        this_pulse_points = unique(I_traces(:,i_p));
+        is_0 = sum(this_pulse_points) == 0;
+        if ~is_0
+            pulses(i_p) = this_pulse_points(this_pulse_points ~= 0);
+        else
+            pulses(i_p) = 0;
+        end
     end
+    current_duration = (sum(I_traces == pulses)-1) / SR;
+    this_total_duration = (size(I_traces,1)) / SR;
+    if current_duration ~= testpulse_duration || p{4} ~= unique(pulses) || p{1} ~= ((size(I_traces,1)) / total_duration) || this_total_duration ~= total_duration
+        disp (['Experiment: ', name, ' has different number of sweeps or different frequency, PLEASE SELECT DIFFERENT PARAMETERS'])
+        return
+    end
+    endpoint = 0.1 * SR; % 100 ms
+    min_distance = 0.005;
+    min_width = 10 / SR;
+    MinPeakProminence = 0.2;
+    MinPeakHeight =  0.5;
+else
+    % Set different parameters for AP detection 
+    disp(['Experiment: ', name, ' is a pairing trial'])
+    [~, max_idx] = max(n_pulses);
+    start_stim = find(I_traces, n_pulses(max_idx), 'first');
+    start_stim = (start_stim(1) - 1)   /SR;
+    endpoint = 0.250 * SR; % 250ms
+    min_distance = 0.005;
+    min_width = 10 / SR;
+    MinPeakProminence = 20;
+    MinPeakHeight =  20;
+    
+    % Pasive membrane params
+    [~, min_idx] = min(n_pulses);
+    length_test_pulse = length(find(ismember(I_traces, n_pulses(min_idx)))) -1;
+    testpulse_duration = length_test_pulse / SR;
+    testpulse_start = find( ismember(I_traces, n_pulses(min_idx)), 1, 'first');
+    testpulse_start = (testpulse_start - 1) / SR;
 end
-current_duration = (sum(I_traces == pulses)-1) / SR;
-this_total_duration = (size(I_traces,1)) / SR;
-if current_duration ~= testpulse_duration || p{4} ~= unique(pulses) || p{1} ~= ((size(I_traces,1)) / total_duration) || this_total_duration ~= total_duration
-    disp (['Experiment: ', name, ' has different number of sweeps or different frequency, PLEASE SELECT DIFFERENT PARAMETERS'])
-    return
-end
+
 
 %% Set variables to consider for eact sweep
 Vm = NaN(n_sweeps,1);
@@ -52,11 +81,6 @@ Sweep_ids = Vm;
 
 
 %%
-% Parameters
-min_distance = 0.005;
-min_width = 10 / SR;
-endpoint = 0.1 * SR; % 100 ms
-
 hold on
 for i_data  = 1: n_sweeps 
     this_data = V_traces(:,i_data);
@@ -74,7 +98,8 @@ for i_data  = 1: n_sweeps
 %     loc_max10 = loc_max10;
     
     % Detect Peaks
-    [peaks, loc, w] = findpeaks(data_start_stim, x, 'MinPeakProminence', 0.2,  'MinPeakHeight', 0.5, 'MinPeakDistance', min_distance, 'MinPeakWidth', min_width);
+    [peaks, loc, w] = findpeaks(data_start_stim, x, 'MinPeakProminence', MinPeakProminence,...
+        'MinPeakHeight',MinPeakHeight, 'MinPeakDistance', min_distance, 'MinPeakWidth', min_width);
     
     
     if isempty(peaks) || loc(1) > 0.015 % if there's no peak or if the first peak is found later than 15ms
@@ -117,7 +142,7 @@ for i_data  = 1: n_sweeps
         slope = NaN;
     end
     % Get the width
-    this_width = w(peak_to_decay);
+    this_width = w(peak_to_decay) * 1000;
     if do_plotting
         cla
         plot(x, data_start_stim, 'k')
@@ -157,6 +182,8 @@ for i_data  = 1: n_sweeps
     Sweep_ids(i_data) = i_data;
     
 end
+
+
 
 % Vm = mean(all_Vms);
 %% Output arguments
