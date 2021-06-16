@@ -82,6 +82,7 @@ function GC = general_configs()
     GC.inter_pulse_interval.(experimenter_ID) = 50; %(pA)
     GC.current_steps.(experimenter_ID) = [-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8,9,10,11,12,13];
     GC.set_string_outwave_selection.(experimenter_ID) = 'I_';
+    GC.path_output_EPSP_analysis.(experimenter_ID) = 'M:\Liselot\Data\';
     
 
     %
@@ -92,7 +93,8 @@ function GC = general_configs()
     GC.inter_pulse_interval.(experimenter_ID) = 100;
     GC.current_steps.(experimenter_ID) = [-4,-3,-2,-1,0,1,2,3,4,5];
     GC.set_string_outwave_selection.(experimenter_ID) = 'I1';
-
+    GC.path_output_EPSP_analysis.(experimenter_ID) = ['N:\Niels\Igor\EPSP_analysis\'];
+    
     experimenter_ID = 'Kristina';
     GC.raw_data_root_path.(experimenter_ID) = 'N:\Kristina\4Patch\';
     GC.string_file_selection.(experimenter_ID) = 'V1.ibw';
@@ -100,6 +102,8 @@ function GC = general_configs()
     GC.inter_pulse_interval.(experimenter_ID) = 50; %(pA)
     GC.current_steps.(experimenter_ID) = [-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8,9,10,11,12,13];
     GC.set_string_outwave_selection.(experimenter_ID) = 'V1';
+    GC.path_output_EPSP_analysis.(experimenter_ID) = 'N:\Kristina\Analysis_ephys';
+ 
 
     
     

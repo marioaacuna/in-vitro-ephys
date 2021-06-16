@@ -6,6 +6,7 @@ testpulse_start = p{3} / 1000;
 testpulse_duration = p{5} / 1000;
 testpulse_amplitude = p{4}; % in pA
 total_duration = p{6};
+win_to_pk = p{7};
 global GC
 %% Find peaks
 warning('off')
@@ -92,8 +93,8 @@ for i_data  = 1: n_sweeps
     data_start_stim = this_EPSP_short;
     x = (1:length(data_start_stim)) ./ SR;
     
-    % Detect max value within the first 10ms
-    x_10 = 0.01 * SR;
+    % Detect max value within the first 10ms or given by the user
+    x_10 = (win_to_pk / 1000) * SR;
     [max_10, loc_max10] = max(data_start_stim(1:x_10));
 %     loc_max10 = loc_max10;
     
@@ -150,7 +151,7 @@ for i_data  = 1: n_sweeps
         plot(loc_max10/SR, this_amp,  'r*')
         plot(f,x_d,y)
         legend off
-        title(['sweep ', num2str(i_data)])
+        title([name, ' ; sweep ', num2str(i_data)])
         pause(0.1)
     
     end        

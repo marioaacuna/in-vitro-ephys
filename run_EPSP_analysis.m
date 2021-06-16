@@ -2,7 +2,7 @@ function DONE =  run_EPSP_analysis(experimenter_ID, recording_date, do_plotting,
 clc
 DONE = 0;
 p = varargin;
-overwrite = p{7};
+overwrite = p{8};
 % Set global variables
 global GC
 % Read general_configs
@@ -36,15 +36,20 @@ switch experimenter_ID
             data_path = data_path{1};
             unique_datapath = 1;
         end
+    case 'Niels'
+        data_path_root = ['N:\Niels\Igor\'];
+        data_path = os.path.join(data_path_root, recording_date{1},'data');
+        unique_datapath = 1;
+        
     otherwise
         keyboard
 end
 if unique_datapath
-    DATA = run_analysis(data_path, experimenter_ID, p, do_plotting);
+    DATA = run_analysis(data_path, experimenter_ID, p, do_plotting, recording_date);
 else
     DATA = table();
     for i_folder = 1:length(folders_to_analyse)
-        data = run_analysis(data_path{i_folder}, experimenter_ID, p, do_plotting);
+        data = run_analysis(data_path{i_folder}, experimenter_ID, p, do_plotting, recording_date);
         DATA = [DATA; data];
     end
 end
@@ -56,26 +61,27 @@ the_names = unique(DATA.("Date/Cell"));
 
 for i_name = 1:length(the_names)
     this_name = the_names{i_name};
-    filename_xlsx = os.path.join(GC.path_putput_AP_analysis.(experimenter_ID), [this_name,  '.xlsx']);
-    data_fieldnames = fieldnames(DATA);
+    data_to_take = find(ismemberCellRows(DATA.("Date/Cell"), {this_name}));
+    this_DATA = DATA(data_to_take,:); %#ok<FNDSB>
+    filename_xlsx = os.path.join(GC.path_output_EPSP_analysis.(experimenter_ID), [this_name,  '.xlsx']);
+    data_fieldnames = fieldnames(this_DATA);
     data_fieldnames(ismember(data_fieldnames, {'Date/Cell', 'trials', 'Properties', 'Row', 'Variables'})) = [];
     % Loop through trials
-    data_to_take = ismemberCellRows(DATA.("Date/Cell"), {this_name});
-    trials = DATA.trials(data_to_take);
+    trials = this_DATA.trials;
     n_trials = length(trials);
     for i_trial = 1:n_trials
         this_trial = trials{i_trial};
         sheet_name = this_trial;
-        idx = ismemberCellRows(DATA.trials, {this_trial});
-        sw_id = DATA.("Sweep ids"){idx} ;
-        amp = DATA.Amplitude{idx}; 
-        wd = DATA.Width{idx};
-        rt = DATA.("Rise time"){idx};
-        dt = DATA.("Decay time"){idx};
-        on = DATA.Onset{idx};
-        slp = DATA.Slope{idx};
-        Ri = DATA.("Input Resistance (MOhm)"){idx};
-        Vm = DATA.("Membrane potential"){idx};
+        idx = ismember(this_DATA.trials,{this_trial});
+        sw_id = this_DATA.("Sweep ids"){idx} ;
+        amp = this_DATA.Amplitude{idx}; 
+        wd = this_DATA.Width{idx};
+        rt = this_DATA.("Rise time"){idx};
+        dt = this_DATA.("Decay time"){idx};
+        on = this_DATA.Onset{idx};
+        slp = this_DATA.Slope{idx};
+        Ri = this_DATA.("Input Resistance (MOhm)"){idx};
+        Vm = this_DATA.("Membrane potential"){idx};
         % convert back to Table
         this_table = array2table([sw_id,amp, slp, Ri, Vm, on, wd, rt, dt], 'VariableNames', data_fieldnames);
         
@@ -108,7 +114,7 @@ DONE = 1;
 end
 
 %% Run analysis
-    function this_table = run_analysis(data_path, experimenter_ID, p, do_plotting)
+    function this_table = run_analysis(data_path, experimenter_ID, p, do_plotting, recording_date)
         global GC
         data_dir = dir(data_path);
         % Pick animals
@@ -119,9 +125,11 @@ end
         
         % Isolate the files to analyze
         str_exptr = GC.string_file_selection.(experimenter_ID);
-        if ~strcmp(experimenter_ID, 'Kristina')
+        if strcmp(experimenter_ID, 'Liselot')
             is_Amp = cell2mat(cellfun(@(x) sum(ismember(x,str_exptr)) == length(str_exptr) && ~endsWith(x, 'outwave.ibw'), files_in_folder, 'UniformOutput', false));
-        else
+        elseif strcmp(experimenter_ID, 'Niels')
+            is_Amp = cell2mat(cellfun(@(x) sum(ismember(x,str_exptr)) == length(str_exptr)+1 && ~endsWith(x, 'outwave.ibw'), files_in_folder, 'UniformOutput', false));
+        elseif strcmp(experimenter_ID, 'Kristina')
             is_Amp = cell2mat(cellfun(@(x) endsWith(x, 'V1.ibw') && ~endsWith(x, 'outwave.ibw'), files_in_folder, 'UniformOutput', false));
         end
         files_to_take = files_in_folder(is_Amp);
@@ -190,6 +198,9 @@ end
         % create table with AP firing rate
         seps = strsplit(data_path, '\');
         this_folder = (seps{end});
+        if strcmp(this_folder, 'data') % For niels' data was something weird.
+            this_folder = recording_date{1};
+        end
         % find sweeps where no peaks were found
         no_peaks_idx = cellfun(@(x) isempty(x), sweep_ids);
         this_date_table = table(repmat({this_folder}, size(sweep_ids(~no_peaks_idx),2),1), 'VariableNames', {'Date/Cell'});
