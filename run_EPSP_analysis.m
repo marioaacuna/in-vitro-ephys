@@ -191,16 +191,25 @@ end
         %% Write down to Excel
         names_idx = cellfun(@(x) ~isempty(x), names);
         NAMES = names(names_idx);
-        % pulses = GC.inter_pulse_interval.(experimenter_ID) * GC.current_steps.(experimenter_ID);
-        % current_pulses = GC.inter_pulse_interval.(experimenter_ID) * GC.current_steps.(experimenter_ID);
         
-        %         pulses_str = pulses2str(pulses);
-        % create table with AP firing rate
+        
         seps = strsplit(data_path, '\');
         this_folder = (seps{end});
         if strcmp(this_folder, 'data') % For niels' data was something weird.
             this_folder = recording_date{1};
         end
+        
+        if isempty(NAMES)
+%             keyboard
+            disp(['File/cell: ', this_folder, ' has no trials'])
+            this_table = [];
+            return
+        end
+        % pulses = GC.inter_pulse_interval.(experimenter_ID) * GC.current_steps.(experimenter_ID);
+        % current_pulses = GC.inter_pulse_interval.(experimenter_ID) * GC.current_steps.(experimenter_ID);
+        
+        %         pulses_str = pulses2str(pulses);
+        % create table with AP firing rate
         % find sweeps where no peaks were found
         no_peaks_idx = cellfun(@(x) isempty(x), sweep_ids);
         this_date_table = table(repmat({this_folder}, size(sweep_ids(~no_peaks_idx),2),1), 'VariableNames', {'Date/Cell'});
