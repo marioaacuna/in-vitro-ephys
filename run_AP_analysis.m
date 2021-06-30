@@ -48,7 +48,10 @@ rest_Vm = [];
 input_R = [];
 Firing_threshold = [];
 SAG_r = [];
+SAG_d = [];
 A_bump = [];
+Area_phase = [];
+Trace_phase = [];
 % do_plotting = 0;
 names = cell(length(files_to_take),1);
 for i_exp = 1:length(files_to_take)
@@ -77,7 +80,7 @@ for i_exp = 1:length(files_to_take)
         end
         data = D.y;
         
-        [FR, AM, W, Vm, Ri, thr, sr, bump,  pulses] = Analysis_workflow.AP_analysis(experimenter_ID,  data,I_traces, do_plotting, this_exp, p);
+        [FR, AM, W, Vm, Ri, thr, sr, bump,  pulses, sag_d, a_phase, t_phase] = Analysis_workflow.AP_analysis(experimenter_ID,  data,I_traces, do_plotting, this_exp, p);
 %         all_data = Analysis_workflow.AP_analysis(experimenter_ID,  data,I_traces, do_plotting, this_exp, p);
         FR_AP = [FR_AP, FR];
         amp_AP = [amp_AP, AM];
@@ -85,8 +88,11 @@ for i_exp = 1:length(files_to_take)
         rest_Vm = [rest_Vm, Vm];
         input_R = [input_R, Ri];
         Firing_threshold = [Firing_threshold, thr];
-        SAG_r = [SAG_r, sr];
+        SAG_r = [SAG_r, sr]; 
+        SAG_d = [SAG_d, sag_d];
         A_bump = [A_bump, bump];
+        Area_phase = [Area_phase,a_phase];
+        Trace_phase = [Trace_phase,t_phase];
         names(i_exp) = {this_exp};
     catch 
        continue
@@ -114,28 +120,37 @@ Vm_table = array2table(rest_Vm', 'VariableNames',{'Membrane potential'});
 Ri_table = array2table(input_R', 'VariableNames',{'Input Resistance (MOhm)'});
 Firing_threshold_table = array2table(Firing_threshold', 'VariableNames',{'AP threshold'});
 SAG_ratio_table = array2table(SAG_r', 'VariableNames',{'SAG ratio'});
+SAG_diff_table = array2table(SAG_d', 'VariableNames',{'SAG diff'});
 Bump_table = array2table(A_bump', 'VariableNames',{'AP Bump'});
+Phase_area_table = array2table(Area_phase', 'VariableNames',{'Phase Area'});
+% Phace traces Table
+Phase_trace_table = array2table(Trace_phase);
+
 % sz_FR = size(FR_AP_table,2);
 % sz_amp = size(amp_AP_table,1);
 % sz_w = size(width_AP_table,1);
+%%
 filename_xlsx = os.path.join(GC.path_putput_AP_analysis.(experimenter_ID),'AP_frequency.xlsx');
 
 
 %%
-this_table = [this_date_table, names_table,FR_AP_table, amp_AP_table,width_AP_table, Vm_table, Ri_table, Firing_threshold_table, SAG_ratio_table, Bump_table];
+this_table = [this_date_table, names_table,FR_AP_table, amp_AP_table,width_AP_table, Vm_table, Ri_table, Firing_threshold_table, SAG_ratio_table, SAG_diff_table, Bump_table, Phase_area_table];
 if exist(filename_xlsx, 'file') && ~overwrite
     original = readtable(filename_xlsx);
     sz_or = height(original);
     range1 = ['B',char(num2str(sz_or+5))];
 
-    writetable(this_table,filename_xlsx,'Sheet',1, 'Range', range1)    
+    writetable(this_table,filename_xlsx,'Sheet',1, 'Range', range1) 
+    writetable(Phase_trace_table,filename_xlsx,'Sheet','Trace_phase', 'Range', range1)    
     
 else
     if overwrite
         delete(filename_xlsx)    
         writetable(this_table,filename_xlsx,'Sheet',1, 'Range', 'B1')
+        writetable(Phase_trace_table,filename_xlsx,'Sheet','Trace_phase')
     else
-        writetable(this_table,filename_xlsx,'Sheet',1, 'Range', 'B1')    
+        writetable(this_table,filename_xlsx,'Sheet',1, 'Range', 'B1')
+        writetable(Phase_trace_table,filename_xlsx,'Sheet','Trace_phase')
     end
 end
 DONE = 1;
