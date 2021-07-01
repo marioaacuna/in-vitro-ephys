@@ -180,32 +180,36 @@ end
 %% Determine AP phase plot
 
 % Smooth the long trace
-smoother_trace_to_analyse = smooth(trace_to_analyse, SR * 0.001);
+% smoother_trace_to_analyse = smooth(trace_to_analyse, SR * 0.001);
 % Find peaks of the long one
-[~, ap_locs_long, ~] = findpeaks(smoother_trace_to_analyse, 'MinPeakHeight', AP_threshold, 'MinPeakDistance', min_distance, 'MaxPeakWidth', max_width);
+[~, ap_locs_long, ~] = findpeaks(trace_to_analyse, 'MinPeakHeight', AP_threshold, 'MinPeakDistance', min_distance, 'MaxPeakWidth', max_width);
 
 %
-first_AP = smoother_trace_to_analyse(finish_bsl-100:ap_locs_long(1)+350);
+first_AP = trace_to_analyse(ap_locs_long(1)-50:ap_locs_long(1)+50 -1);
 
 % downsample to have the same number of points accross trials
-goal_n_points = 1000;
-actual_n_points = length(first_AP);
-
-trace_new_phase = resample(first_AP,goal_n_points,actual_n_points);    
+% goal_n_points = 1000;
+% actual_n_points = length(first_AP);
+% 
+% trace_new_phase = resample(first_AP,goal_n_points,actual_n_points);    
 
 % Calculate the derivative 
-trace_new_phase = trace_new_phase(2:end);
-der_first = diff(trace_new_phase);
+% trace_new_phase = trace_new_phase(2:end);
+der_first = gradient(first_AP)./ (1000/SR); % dV/dt (mV/ms); We use gradient better, cuz it does centered-based diff
 
 
-
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%
+% time_AP = linspace(1000/SR, length(first_AP)*1000 / SR, length(first_AP));
+% der_first_raw =  diff(first_AP, 1000/SR);
+% 
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Figure
 % figure, plot(first_AP(1:length(first_AP)-1),der_first)
 %
 % figure, plot(fft(der_first), 'r')
 %
 % Calculate area phase
-AP_to_phase = trace_new_phase(1:length(trace_new_phase)-1);
+AP_to_phase = first_AP;
 area_phase = polyarea(AP_to_phase,der_first);
 trace_phase = [AP_to_phase,der_first ]; % X,Y
 
