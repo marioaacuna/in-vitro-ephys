@@ -211,7 +211,7 @@ der_first = gradient(first_AP)./ (1000/SR); % dV/dt (mV/ms); We use gradient bet
 % Calculate area phase
 AP_to_phase = first_AP;
 area_phase = polyarea(AP_to_phase,der_first);
-trace_phase = [AP_to_phase,der_first ]; % X,Y
+% trace_phase = [AP_to_phase,der_first ]; % X,Y
 
 % Check figure
 % figure, plot(AP_to_phase, der_first)
@@ -256,7 +256,8 @@ varargout{8}  = A_bump;
 varargout{9}  = pulses;
 varargout{10} = SAG_D;
 varargout{11} = area_phase;
-varargout{12} = trace_phase;
+varargout{12} = AP_to_phase;
+varargout{13} = der_first;
 
 
 

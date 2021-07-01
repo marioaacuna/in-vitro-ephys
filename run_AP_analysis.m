@@ -51,7 +51,8 @@ SAG_r = [];
 SAG_d = [];
 A_bump = [];
 Area_phase = [];
-Trace_phase = [];
+AP_phase = [];
+DER_phase =[];
 % do_plotting = 0;
 names = cell(length(files_to_take),1);
 for i_exp = 1:length(files_to_take)
@@ -80,7 +81,7 @@ for i_exp = 1:length(files_to_take)
         end
         data = D.y;
         
-        [FR, AM, W, Vm, Ri, thr, sr, bump,  pulses, sag_d, a_phase, t_phase] = Analysis_workflow.AP_analysis(experimenter_ID,  data,I_traces, do_plotting, this_exp, p);
+        [FR, AM, W, Vm, Ri, thr, sr, bump,  pulses, sag_d, a_phase, ap_phase, der_phase] = Analysis_workflow.AP_analysis(experimenter_ID,  data,I_traces, do_plotting, this_exp, p);
 %         all_data = Analysis_workflow.AP_analysis(experimenter_ID,  data,I_traces, do_plotting, this_exp, p);
         FR_AP = [FR_AP, FR];
         amp_AP = [amp_AP, AM];
@@ -92,7 +93,8 @@ for i_exp = 1:length(files_to_take)
         SAG_d = [SAG_d, sag_d];
         A_bump = [A_bump, bump];
         Area_phase = [Area_phase,a_phase];
-        Trace_phase = [Trace_phase,t_phase];
+        AP_phase = [AP_phase,ap_phase];
+        DER_phase = [DER_phase,der_phase];
         names(i_exp) = {this_exp};
     catch 
        continue
@@ -123,8 +125,9 @@ SAG_ratio_table = array2table(SAG_r', 'VariableNames',{'SAG ratio'});
 SAG_diff_table = array2table(SAG_d', 'VariableNames',{'SAG diff'});
 Bump_table = array2table(A_bump', 'VariableNames',{'AP Bump'});
 Phase_area_table = array2table(Area_phase', 'VariableNames',{'Phase Area'});
-% Phace traces Table
-Phase_trace_table = array2table(Trace_phase);
+% Phase traces Tables
+AP_phase_table = array2table(AP_phase, 'VariableNames', NAMES);
+DER_phase_table = array2table(DER_phase, 'VariableNames', NAMES);
 
 % sz_FR = size(FR_AP_table,2);
 % sz_amp = size(amp_AP_table,1);
@@ -141,16 +144,19 @@ if exist(filename_xlsx, 'file') && ~overwrite
     range1 = ['B',char(num2str(sz_or+5))];
 
     writetable(this_table,filename_xlsx,'Sheet',1, 'Range', range1) 
-    writetable(Phase_trace_table,filename_xlsx,'Sheet','Trace_phase', 'Range', range1)    
-    
+    writetable(AP_phase_table,filename_xlsx,'Sheet','Phase AP trace', 'Range', range1)    
+    writetable(DER_phase_table,filename_xlsx,'Sheet','Phase DER trace', 'Range', range1)   
 else
     if overwrite
         delete(filename_xlsx)    
         writetable(this_table,filename_xlsx,'Sheet',1, 'Range', 'B1')
-        writetable(Phase_trace_table,filename_xlsx,'Sheet','Trace_phase')
+        writetable(AP_phase_table,filename_xlsx,'Sheet','Phase AP trace', 'Range', 'B1')
+        writetable(DER_phase_table,filename_xlsx,'Sheet','Phase DER trace', 'Range', 'B1')
     else
         writetable(this_table,filename_xlsx,'Sheet',1, 'Range', 'B1')
-        writetable(Phase_trace_table,filename_xlsx,'Sheet','Trace_phase')
+        writetable(AP_phase_table,filename_xlsx,'Sheet','Phase AP trace', 'Range', 'B1')
+        writetable(DER_phase_table,filename_xlsx,'Sheet','Phase DER trace', 'Range', 'B1')
+
     end
 end
 DONE = 1;
