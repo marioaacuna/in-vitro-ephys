@@ -42,8 +42,8 @@ if ~is_paring_trial
         return
     end
     endpoint = 0.1 * SR; % 100 ms
-    min_distance = IPI - 0.007;
-    min_width = 0.005;% 10 / SR;
+    min_distance = IPI - 0.01;
+    min_width = 0.0025;% 10 / SR;
 %     MinPeakProminence = 0.02;
 %     MinPeakHeight = 0;% 0.5;
 else
@@ -92,7 +92,7 @@ for i_data  = 1: n_sweeps
     this_data = I_traces(:,i_data);
     this_data_smoothed = smooth(this_data, SR * 0.001); % do not take, since it shortenes the peak of the transients
     bsl = this_data((start_stim*SR) - (0.25*SR) +1  :start_stim*SR - 50);
-    MinPeakHeight = 1.5*std(bsl);
+    MinPeakHeight = 2*std(bsl);
     median_bsl= median(bsl);
     this_EPSC_short = this_data(start_stim*SR +1 : start_stim*SR + endpoint) - median_bsl;
 %     data_start_stim = this_EPSP_short(start_stim*SR :end);
@@ -107,12 +107,41 @@ for i_data  = 1: n_sweeps
     ismin = abs(min_10) > abs(max_10);
     if ismin
         data_start_stim = -data_start_stim;
-       [max_10, loc_max10] = max(data_start_stim(1:x_10));
-%          MinPeakProminence = -MinPeakProminence;
-%          MinPeakHeight = MinPeakProminence;
-         
+        [max_10, loc_max10] = max(data_start_stim(1:x_10));
+        %          MinPeakProminence = -MinPeakProminence;
+        %          MinPeakHeight = MinPeakProminence;
+        
     end
-%     loc_max10 = loc_max10;
+    %     loc_max10 = loc_max10;
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Traces from kristina seem to be very noise at 50 Hz. Filtering:
+
+    fs = SR;                % sampling rate
+    f0 = 50;                % notch frequency
+    fn = fs/2;              % Nyquist frequency
+    freqRatio = f0/fn;      % ratio of notch freq. to Nyquist freq.
+    
+    notchWidth = 0.001;       % width of the notch (init = 0.1)
+    
+    % Compute zeros
+    notchZeros = [exp( sqrt(-1)*pi*freqRatio ), exp( -sqrt(-1)*pi*freqRatio )];
+    
+    % Compute poles
+    notchPoles = (1-notchWidth) * notchZeros;
+    
+%     figure;
+%     zplane(notchZeros.', notchPoles.');
+    
+    b = poly( notchZeros ); %  Get moving average filter coefficients
+    a = poly( notchPoles ); %  Get autoregressive filter coefficients
+    
+%     figure;
+%     freqz(b,a,32000,fs)
+    
+    % filter signal x
+    data_start_stim = filter(b,a, data_start_stim);
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
     % Detect Peaks
     [peaks, loc, w] = findpeaks(data_start_stim, x,  'MinPeakHeight', MinPeakHeight,  'MinPeakWidth', min_width, 'MinPeakDistance', min_distance);
@@ -123,9 +152,6 @@ for i_data  = 1: n_sweeps
     end
     
     if isempty(peaks) || loc(1) > 0.020 % if there's no peak or if the first peak is found later than 20ms
-        if isempty(peaks)
-            continue
-        end
         if ~ismin
             [~, peak_to_decay] = max(max_10);
         else
@@ -151,13 +177,17 @@ for i_data  = 1: n_sweeps
     end
     % Calculate decay time
     if length(rise_time) > 1, rise_time = NaN;end
+    
     try % in case only one event was detected return NaN (we want the second pulse)
         y = data_start_stim(loc(peak_to_decay)*SR:end); % Values of current from the peak to the end
         x_d = x(ceil(loc(peak_to_decay) *SR) :end);
         f = fit(x_d',y,'exp1');
         decay_time = abs(f.b); % in ms ?
     catch
-            decay_time = NaN; % in ms ?
+        y = data_start_stim(loc(1)*SR:end); % Values of current from the peak to the end
+        x_d = x(ceil(loc(1) *SR) :end);
+        f = fit(x_d',y,'exp1');
+        decay_time = abs(f.b); % in ms ?
     end
 
     % calculate Slope
@@ -186,8 +216,10 @@ for i_data  = 1: n_sweeps
         cla
         plot(x, -data_start_stim, 'k')
         hold on
-        plot(loc, -peaks,  'r*')
+        try
+            plot(loc, - peaks,  'r*')
 %         plot(f,x_d,y)
+        end
         legend off
         title([name, ' ; sweep ', num2str(i_data)])
         pause(0.1)
