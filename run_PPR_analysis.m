@@ -2,7 +2,7 @@ function DONE =  run_PPR_analysis(experimenter_ID, recording_date, do_plotting, 
 clc
 DONE = 0;
 p = varargin;
-overwrite = p{8};
+overwrite = p{9};
 % Set global variables
 global GC
 % Read general_configs
