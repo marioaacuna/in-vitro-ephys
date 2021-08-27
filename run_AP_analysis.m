@@ -56,6 +56,7 @@ Tau_mb = [];
 Area_phase = [];
 AP_phase = [];
 DER_phase =[];
+Adapt_index = [];
 % do_plotting = 0;
 names = cell(length(files_to_take),1);
 for i_exp = 1:length(files_to_take)
@@ -84,7 +85,7 @@ for i_exp = 1:length(files_to_take)
         end
         data = D.y;
         
-        [FR, AM, W, Vm, Ri, thr, sr, bump,  pulses, sag_d, a_phase, ap_phase, der_phase, vel_depo, vel_repo, tau_mb] = Analysis_workflow.AP_analysis(experimenter_ID,  data,I_traces, do_plotting, this_exp, p);
+        [FR, AM, W, Vm, Ri, thr, sr, bump,  pulses, sag_d, a_phase, ap_phase, der_phase, vel_depo, vel_repo, tau_mb, adapt_index] = Analysis_workflow.AP_analysis(experimenter_ID,  data,I_traces, do_plotting, this_exp, p);
 %         all_data = Analysis_workflow.AP_analysis(experimenter_ID,  data,I_traces, do_plotting, this_exp, p);
         FR_AP = [FR_AP, FR];
         amp_AP = [amp_AP, AM];
@@ -98,6 +99,7 @@ for i_exp = 1:length(files_to_take)
         Vel_depo  = [Vel_depo, vel_depo];
         Vel_repo  = [Vel_repo, vel_repo];
         Tau_mb = [Tau_mb, tau_mb];
+        Adapt_index  = [Adapt_index ,adapt_index];
         Area_phase = [Area_phase,a_phase];
         AP_phase = [AP_phase,ap_phase];
         DER_phase = [DER_phase,der_phase];
@@ -134,10 +136,15 @@ Phase_area_table = array2table(Area_phase', 'VariableNames',{'Phase Area'});
 Vel_depo_table = array2table(Vel_depo', 'VariableNames',{'Vel Depo'});
 Vel_repo_table = array2table(Vel_repo', 'VariableNames',{'Vel Repo'});
 Tau_mb_table = array2table(Tau_mb', 'VariableNames',{'Tau mb(ms)'});
-
+Adapt_idx = array2table(Adapt_index', 'VariableNames',{'Adapt_idx'});
 % Phase traces Tables
 AP_phase_table = array2table(AP_phase, 'VariableNames', NAMES);
 DER_phase_table = array2table(DER_phase, 'VariableNames', NAMES);
+DER_phase_table =[repmat(recording_date, length(DER_phase),1), DER_phase_table];
+DER_phase_table.Properties.VariableNames(1) = {'date'};
+AP_phase_table =[repmat(recording_date, length(AP_phase),1), AP_phase_table];
+AP_phase_table.Properties.VariableNames(1) = {'date'};
+
 
 % sz_FR = size(FR_AP_table,2);
 % sz_amp = size(amp_AP_table,1);
@@ -148,7 +155,7 @@ filename_xlsx = os.path.join(GC.path_putput_AP_analysis.(experimenter_ID),'AP_fr
 
 %%
 this_table = [this_date_table, names_table,FR_AP_table, amp_AP_table,width_AP_table, Vm_table, Ri_table, Firing_threshold_table, ...
-                SAG_ratio_table, SAG_diff_table, Bump_table, Phase_area_table, Vel_depo_table, Vel_repo_table, Tau_mb_table];
+                SAG_ratio_table, SAG_diff_table, Bump_table, Phase_area_table, Vel_depo_table, Vel_repo_table, Tau_mb_table, Adapt_idx];
 if exist(filename_xlsx, 'file') && ~overwrite
     original = readtable(filename_xlsx);
     sz_or = height(original);

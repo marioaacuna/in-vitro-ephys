@@ -50,6 +50,7 @@ AP_threshold = 20;
 
 %%
 hold on
+do_classify = 1;% plot_adapt = 1;
 for i_data  = 1: n_steps 
     this_data = V_traces(:,i_data);
 %     vm_this_trace = median(this_data(1:finish_bsl -10,:));
@@ -80,6 +81,33 @@ for i_data  = 1: n_steps
       abs_Vm = abs(Vm);
       abs_ss = abs(ss);
       Ri = abs(((abs_ss - abs_Vm)*10^-3) / (pulses(i_data)*10^-9)) /1000; % MOhms
+    end
+    %% Classify the firing pattern
+   
+    if length(peaks) >= 10 && do_classify
+%         keyboard
+        % calculate the diff between peaks
+        dist_peaks = (diff(loc) / SR);
+        time_bin_activity_n_frames = 2;
+        peaks_binned = make_tensor({dist_peaks}, time_bin_activity_n_frames, [], 'median');
+%         if plot_adapt
+%             figure, heatmap((peaks_binned/ max(peaks_binned)), 'Colormap', jet)% hsv
+%             caxis([0 max((peaks_binned/ max(peaks_binned)))])
+%             title(name)
+%             plot_adapt = 0;
+%         end
+        
+        R_ISI9_ISI1 = peaks_binned(1)/peaks_binned(end);
+       
+%         if R_ISI9_ISI1 < 0.3
+%             figure, heatmap((peaks_binned/ max(peaks_binned)), 'Colormap', jet)% hsv
+%             caxis([0 max((peaks_binned/ max(peaks_binned)))])
+%             title(name)
+%         end
+%         R_ISI8_ISI1 = peaks_binned(end-1)/peaks_binned(1);
+        do_classify = 0;
+%         figure, heatmap(1./loc, 'Colormap', summer)
+        
     end
 end
 % if do_plotting
@@ -273,6 +301,7 @@ varargout{13} = der_first;
 varargout{14} = speed_depo;
 varargout{15} = speed_repo;
 varargout{16} = tau_membrane;
+varargout{17} = R_ISI9_ISI1;
 
 
 
