@@ -211,11 +211,23 @@ der_first = gradient(first_AP)./ (1000/SR); % dV/dt (mV/ms); We use gradient bet
 % Calculate area phase
 AP_to_phase = first_AP;
 area_phase = polyarea(AP_to_phase,der_first);
+% get the max and min of speed (depol and repol phases, respectively)
+speed_depo = max(der_first);
+speed_repo = abs(min(der_first));
 % trace_phase = [AP_to_phase,der_first ]; % X,Y
 
 % Check figure
 % figure, plot(AP_to_phase, der_first)
-
+%% CAlculate tau of membrane depo
+trace_to_tau = (V_traces(finish_evk:finish_evk+1000,1));
+% trace_to_tau = evoked_trace_norm_first_AP(1:150);
+y = trace_to_tau(5:end); % Values of voltage from onse stim to first AP
+x = 1000*(1:length(y)) ./ SR;
+x = x';
+p0= [[ones(size(x)), -exp(-x)]\y; 1];
+g = ('a-b*exp(-1/c*x)');
+f = fit( x, y, g, 'StartPoint', p0 );
+tau_membrane = f.c;
 %% AP threshold
 % pulses = GC.inter_pulse_interval.(experimenter_ID) * GC.current_steps.(experimenter_ID);
 % Set up fittype and options.
@@ -258,6 +270,9 @@ varargout{10} = SAG_D;
 varargout{11} = area_phase;
 varargout{12} = AP_to_phase;
 varargout{13} = der_first;
+varargout{14} = speed_depo;
+varargout{15} = speed_repo;
+varargout{16} = tau_membrane;
 
 
 
