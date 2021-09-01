@@ -156,7 +156,7 @@ filename_xlsx = os.path.join(GC.path_putput_AP_analysis.(experimenter_ID),'AP_fr
 %%
 this_table = [this_date_table, names_table,FR_AP_table, amp_AP_table,width_AP_table, Vm_table, Ri_table, Firing_threshold_table, ...
                 SAG_ratio_table, SAG_diff_table, Bump_table, Phase_area_table, Vel_depo_table, Vel_repo_table, Tau_mb_table, Adapt_idx];
-if exist(filename_xlsx, 'file') && ~overwrite
+if exist(filename_xlsx, 'file') && overwrite
     original = readtable(filename_xlsx);
     sz_or = height(original);
     range1 = ['B',char(num2str(sz_or+5))];

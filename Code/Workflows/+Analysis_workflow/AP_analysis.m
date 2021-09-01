@@ -210,7 +210,7 @@ end
 % Smooth the long trace
 % smoother_trace_to_analyse = smooth(trace_to_analyse, SR * 0.001);
 % Find peaks of the long one
-[~, ap_locs_long, ~] = findpeaks(trace_to_analyse, 'MinPeakHeight', AP_threshold, 'MinPeakDistance', min_distance, 'MaxPeakWidth', max_width);
+[~, ap_locs_long, ~] = findpeaks(trace_to_analyse, 'MinPeakHeight', 5, 'MinPeakDistance', min_distance, 'MaxPeakWidth', max_width);
 
 %
 first_AP = trace_to_analyse(ap_locs_long(1)-50:ap_locs_long(1)+50 -1);
