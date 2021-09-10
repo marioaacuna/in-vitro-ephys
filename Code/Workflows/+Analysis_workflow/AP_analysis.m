@@ -53,6 +53,7 @@ hold on
 do_classify = 1;% plot_adapt = 1;
 for i_data  = 1: n_steps 
     this_data = V_traces(:,i_data);
+    this_pulse = pulses(i_data);
 %     vm_this_trace = median(this_data(1:finish_bsl -10,:));
     median_evoked = median(this_data(finish_bsl:finish_evk));
 %     max_evoked = max(this_data(finish_bsl:finish_bsl+20));
@@ -107,7 +108,23 @@ for i_data  = 1: n_steps
 %         R_ISI8_ISI1 = peaks_binned(end-1)/peaks_binned(1);
         do_classify = 0;
 %         figure, heatmap(1./loc, 'Colormap', summer)
-        
+    end
+    %% Do burst frequency AP at 200 pA
+    if this_pulse == 200 % So far, take traces at 200 pA, with a threshold of 15ms
+        % this calculates the frequency of APs in bursts where the ISI is
+        % lower than a given threshold in sec. NaN values are given if there
+        % are no spikes at 200pA or if there's no burst.
+        ISI_burst_threshold = 0.015;% in sec
+        if length(loc) > 1
+%             keyboard
+            % Determine how much the neuron bursts
+            dist_peaks = diff(loc / SR);
+            n_peaks_burst = 1 + sum(dist_peaks <= ISI_burst_threshold); % calculate nr of peaks in this time
+            burst_freq  = n_peaks_burst/sum(dist_peaks(dist_peaks <= ISI_burst_threshold));
+            if isinf(burst_freq), burst_freq = NaN;end %No bursting lower than time threshold 
+        else
+            burst_freq = NaN;
+        end
     end
 end
 % if do_plotting
@@ -302,6 +319,7 @@ varargout{14} = speed_depo;
 varargout{15} = speed_repo;
 varargout{16} = tau_membrane;
 varargout{17} = R_ISI9_ISI1;
+varargout{18} = burst_freq;
 
 
 
