@@ -1,7 +1,6 @@
 function D = IBWread(FN);
 % IBWread - read Igor wave from IBW file
 %   D = IBWread('Foo.ibw') reads Igor file Foo.ibw into struct D.
-
 if exist('fullfilename', 'file'), FFN = fullfilename(FN, cd, '.ibw');
 else, FFN = FN;
 end
