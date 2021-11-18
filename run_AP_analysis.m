@@ -17,6 +17,8 @@ switch experimenter_ID
         data_path = os.path.join(data_path_root, recording_date{1}, 'traces');
     case 'Liselot'
         data_path = os.path.join(data_path_root, '2. opto-5HT7', recording_date{1}, [recording_date{1},'.data']);
+    case 'Sri'
+        data_path = os.path.join(data_path_root, recording_date{1});
     otherwise
         keyboard 
 end
@@ -30,7 +32,7 @@ files_in_folder = natsort(files_in_folder);
 
 % Isolate the files to analyze
 str_exptr = GC.string_file_selection.(experimenter_ID);
-if strcmp(experimenter_ID, 'Niels')
+if strcmp(experimenter_ID, {'Niels', 'Sri'})
     is_Amp = cell2mat(cellfun(@(x) sum(ismember(x,str_exptr)) == length(str_exptr)+1 && ~endsWith(x, 'outwave.ibw'), files_in_folder, 'UniformOutput', false));
 else
     is_Amp = cell2mat(cellfun(@(x) sum(ismember(x,str_exptr)) == length(str_exptr) && ~endsWith(x, 'outwave.ibw'), files_in_folder, 'UniformOutput', false));
