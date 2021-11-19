@@ -46,7 +46,8 @@ n_peaks = FR;
 % duration = 0.6;
 min_distance = 20;
 max_width = 300;
-AP_threshold = 20;
+% AP_threshold = 20;
+AP_threshold = 30;
 
 %%
 hold on
@@ -137,8 +138,12 @@ ap_idx = intersect(ap_idx, find(pulses>0)); % find pulses that are larger than 0
 if isempty(ap_idx)
     disp([name, ' is most probably an ASTROCYTE'])
 %     amp_AP = NaN;width_AP=NaN; Vm=NaN; AP_thr=NaN; SAG_R=NaN; pulses = NaN;
+    flag = 1;
     return
+else 
+    flag = 0;
 end
+
 
 %% Valuaes of 1st AP
 trace_to_analyse = V_traces(:,ap_idx(1));
@@ -320,6 +325,7 @@ varargout{15} = speed_repo;
 varargout{16} = tau_membrane;
 varargout{17} = R_ISI9_ISI1;
 varargout{18} = burst_freq;
+varargout{19} = flag;
 
 
 
