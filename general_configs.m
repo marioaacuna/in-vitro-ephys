@@ -114,13 +114,22 @@ function GC = general_configs()
     GC.path_output_EPSP_analysis.(experimenter_ID) = 'T:\Srikanth - ephys data\analysis_ephys';
     
     
-    experimenter_ID = 'Fede_setup_1';
+    experimenter_ID = 'Fede_setup_1_5HT7';
     GC.raw_data_root_path.(experimenter_ID) = 'V:\Federica\data\all_data\';
     GC.string_file_selection.(experimenter_ID) = 'I_';
     GC.path_putput_AP_analysis.(experimenter_ID) = 'V:\Federica\Matlab_revised_traces';
     GC.inter_pulse_interval.(experimenter_ID) = 100;
     GC.current_steps.(experimenter_ID) = [-4,-3,-2,-1,0,1,2,3,4,5];
     GC.set_string_outwave_selection.(experimenter_ID) = 'V_Soma';
+    
+    experimenter_ID = 'Fede_setup_1';
+    GC.raw_data_root_path.(experimenter_ID) = 'V:\Federica\data\all_data\';
+    GC.string_file_selection.(experimenter_ID) = 'Tuft';
+    GC.path_putput_AP_analysis.(experimenter_ID) = 'V:\Federica\Matlab_revised_traces';
+    GC.inter_pulse_interval.(experimenter_ID) = 100;
+    GC.current_steps.(experimenter_ID) = [-4,-3,-2,-1,0,1,2,3,4,5];
+    GC.set_string_outwave_selection.(experimenter_ID) = 'I1_outwave';
+
 
     
     % Files suffix (files that are common to any experiment)

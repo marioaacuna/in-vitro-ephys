@@ -13,7 +13,7 @@ data_path_root =  GC.raw_data_root_path.(experimenter_ID); % This needs to be ad
 toolboxes_to_use = {'Igor2Matlab'};
 toggle_toolbox(toolboxes_to_use, 'on')
 switch experimenter_ID
-    case {'Federica', 'Fede_setup_1', 'Niels'}
+    case {'Federica', 'Fede_setup_1', 'Fede_setup_1_5HT7','Niels'}
         data_path = os.path.join(data_path_root, recording_date{1}, 'traces');
     case 'Liselot'
         data_path = os.path.join(data_path_root, '2. opto-5HT7', recording_date{1}, [recording_date{1},'.data']);
@@ -32,7 +32,7 @@ files_in_folder = natsort(files_in_folder);
 
 % Isolate the files to analyze
 str_exptr = GC.string_file_selection.(experimenter_ID);
-if any(strcmp(experimenter_ID, {'Niels', 'Sri'})) 
+if any(strcmp(experimenter_ID, {'Niels', 'Sri', 'Fede_setup_1'})) 
    is_Amp = cell2mat(cellfun(@(x) sum(ismember(x,str_exptr)) == length(str_exptr)+1 && ~endsWith(x, 'outwave.ibw'), files_in_folder, 'UniformOutput', false));
 else
     is_Amp = cell2mat(cellfun(@(x) sum(ismember(x,str_exptr)) == length(str_exptr) && ~endsWith(x, 'outwave.ibw'), files_in_folder, 'UniformOutput', false));
