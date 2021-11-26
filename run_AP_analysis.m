@@ -13,7 +13,7 @@ data_path_root =  GC.raw_data_root_path.(experimenter_ID); % This needs to be ad
 toolboxes_to_use = {'Igor2Matlab'};
 toggle_toolbox(toolboxes_to_use, 'on')
 switch experimenter_ID
-    case {'Federica', 'Niels'}
+    case {'Federica', 'Fede_setup_1', 'Niels'}
         data_path = os.path.join(data_path_root, recording_date{1}, 'traces');
     case 'Liselot'
         data_path = os.path.join(data_path_root, '2. opto-5HT7', recording_date{1}, [recording_date{1},'.data']);
