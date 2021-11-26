@@ -51,6 +51,7 @@ AP_threshold = 30;
 
 %%
 hold on
+R_ISI9_ISI1 = NaN; % In case we cannot find more than 10 AP in our traces
 do_classify = 1;% plot_adapt = 1;
 for i_data  = 1: n_steps 
     this_data = V_traces(:,i_data);
