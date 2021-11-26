@@ -34,8 +34,8 @@ files_in_folder = natsort(files_in_folder);
 % str_exptr = GC.string_file_selection.(experimenter_ID);
 str_exptr = GC.string_file_selection.Sri;
 
-if any(strcmp(experimenter_ID, {'Niels', 'Sri', 'Liselot'}))
-    is_Amp = cell2mat(cellfun(@(x) sum(ismember(x,str_exptr)) == length(str_exptr)+1 && ~endsWith(x, 'outwave.ibw'), files_in_folder, 'UniformOutput', false));
+if any(strcmp(experimenter_ID, {'Niels', 'Sri', 'Liselot'})) 
+   is_Amp = cell2mat(cellfun(@(x) sum(ismember(x,str_exptr)) == length(str_exptr)+1 && ~endsWith(x, 'outwave.ibw'), files_in_folder, 'UniformOutput', false));
 else
     is_Amp = cell2mat(cellfun(@(x) sum(ismember(x,str_exptr)) == length(str_exptr) && ~endsWith(x, 'outwave.ibw'), files_in_folder, 'UniformOutput', false));
 end
@@ -90,8 +90,11 @@ for i_exp = 1:length(files_to_take)
         end
         data = D.y;
         
-        [FR, AM, W, Vm, Ri, thr, sr, bump,  pulses, sag_d, a_phase, ap_phase, der_phase, vel_depo, vel_repo, tau_mb, adapt_index, burst_freq] = Analysis_workflow.AP_analysis(experimenter_ID,  data,I_traces, do_plotting, this_exp, p);
+        [FR, AM, W, Vm, Ri, thr, sr, bump,  pulses, sag_d, a_phase, ap_phase, der_phase, vel_depo, vel_repo, tau_mb, adapt_index, burst_freq, flag] = Analysis_workflow.AP_analysis(experimenter_ID,  data,I_traces, do_plotting, this_exp, p);
 %         all_data = Analysis_workflow.AP_analysis(experimenter_ID,  data,I_traces, do_plotting, this_exp, p);
+        if flag % this is to avoid adding new data when the recording was not good
+           continue
+        end
         FR_AP = [FR_AP, FR];
         amp_AP = [amp_AP, AM];
         width_AP = [width_AP, W];
