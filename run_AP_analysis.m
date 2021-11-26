@@ -31,10 +31,8 @@ files_in_folder = names(endsWith(names, ending));
 files_in_folder = natsort(files_in_folder);
 
 % Isolate the files to analyze
-% str_exptr = GC.string_file_selection.(experimenter_ID);
-str_exptr = GC.string_file_selection.Sri;
-
-if any(strcmp(experimenter_ID, {'Niels', 'Sri', 'Liselot'})) 
+str_exptr = GC.string_file_selection.(experimenter_ID);
+if any(strcmp(experimenter_ID, {'Niels', 'Sri'})) 
    is_Amp = cell2mat(cellfun(@(x) sum(ismember(x,str_exptr)) == length(str_exptr)+1 && ~endsWith(x, 'outwave.ibw'), files_in_folder, 'UniformOutput', false));
 else
     is_Amp = cell2mat(cellfun(@(x) sum(ismember(x,str_exptr)) == length(str_exptr) && ~endsWith(x, 'outwave.ibw'), files_in_folder, 'UniformOutput', false));
@@ -160,7 +158,7 @@ AP_phase_table.Properties.VariableNames(1) = {'date'};
 % sz_amp = size(amp_AP_table,1);
 % sz_w = size(width_AP_table,1);
 %%
-filename_xlsx = os.path.join(GC.path_putput_AP_analysis.(experimenter_ID),'AP_frequency.xlsx');
+filename_xlsx = os.path.join(GC.path_putput_AP_analysis.(experimenter_ID),['AP_frequency_', experimenter_ID, '.xlsx']);
 
 
 %%
