@@ -111,7 +111,8 @@ for i_exp = 1:length(files_to_take)
         AP_phase = [AP_phase,ap_phase];
         DER_phase = [DER_phase,der_phase];
         names(i_exp) = {this_exp};
-    catch 
+    catch ME
+        disp(ME.message)
        continue
     end
    

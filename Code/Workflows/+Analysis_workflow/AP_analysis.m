@@ -31,6 +31,7 @@ duration_ms = 1000 * this_duration_step / (size(I_traces,1) / p{2});
 
 if current_steps ~= p{5} || p{6} ~= unique(diff(pulses)) || p{1} ~= (size(I_traces,1) / p{2}) || p{4} ~= duration_ms
     disp (['Experiment: ', name, ' has different number of sweeps or different frequency, PLEASE SELECT DIFFERENT PARAMETERS'])
+   
     return
 end
 
@@ -172,7 +173,7 @@ AP_loc = ap_locs(1);
 evoked_trace_norm_first_AP_smoothed = smooth(evoked_trace_norm_first_AP, SR * 0.001);
 
 if length(ap_locs) > 1
-    F_derivative = diff(evoked_trace_norm_first_AP_smoothed(AP_loc+2:AP_loc+350));% / (1/SR) ; % +250 iniially.
+    F_derivative = diff(evoked_trace_norm_first_AP_smoothed(AP_loc+2:AP_loc+ (0.06 * SR)));% take 50 ms after the first AP %% 350 / (1/SR) ; % +250 iniially.
 elseif length(ap_locs) == 1
      F_derivative = diff(evoked_trace_norm_first_AP_smoothed(AP_loc+2:end));
 end
@@ -203,28 +204,27 @@ pos_zx = zx(yx(:,1)>=0 & yx(:,2)<0);
 %    plot([zx(itra), zx(itra)], [-0.2 0.2], 'r--')
 %    
 % end
-
-points = [ap_locs(1) + finish_bsl + zx(1) , ap_locs(1) + finish_bsl + zx(2), ap_locs(1) + finish_bsl + zx(3)];
-if length(ap_locs) ~= 1 % In case a sweep has only one action potential, calculate bump directly
-    if AP_loc + zx(3) > ap_locs(2) || (zx(2) - zx(1)) < 5 % if the distance of the third intersection is larger than the position of the second AP, give a NaN; or if the difference between 0-crossings is lower than 5 points
-        A_bump = NaN;
-    else
-        bump = trace_to_analyse(points(1): points(3));
-        A_bump = abs(abs(max(bump)) - abs(min(bump)));
-        
-        %     if startsWith(name, 't76'), keyboard, end
-        % %     figure, plot(trace_to_analyse)
-        %     figure, plot(trace_to_analyse(points(1): points(3)))
-        % %     hold on
-        % %     plot([AP_loc + zx(1) + finish_bsl, AP_loc + zx(1) + finish_bsl], [-100 40], 'r--')
-        %     title (name)
-    end
+if length(zx) <3 % in case there are only 2 zero crossings (it could happend if the derivative does not return to 0 within the time window)
+    A_bump = NaN; % most probably it will find a second AP instead of a real bump
 else
-    if (zx(2) - zx(1)) < 5 % If the distnace of the base (first crossing) and the second crossing is less than 5 points
-        A_bump = NaN;
+    
+    points = [ap_locs(1) + finish_bsl + zx(1) , ap_locs(1) + finish_bsl + zx(2), ap_locs(1) + finish_bsl + zx(3)];
+    if length(ap_locs) ~= 1 && length(zx)>2 % In case a sweep has only one action potential, calculate bump directly
+        if AP_loc +  zx(3) > ap_locs(2) || (zx(2) - zx(1)) < 5 % if the distance of the third intersection is larger than the position of the second AP, give a NaN; or if the difference between 0-crossings is lower than 5 points
+            A_bump = NaN;
+        else
+            bump = trace_to_analyse(points(1): points(3));
+            A_bump = abs(abs(max(bump)) - abs(min(bump)));
+            
+        end
+
     else
-        bump = trace_to_analyse(points(1): points(3));
-        A_bump = abs(abs(max(bump)) - abs(min(bump)));
+        if (zx(2) - zx(1)) < 5 % If the distnace of the base (first crossing) and the second crossing is less than 5 points
+            A_bump = NaN;
+        else
+            bump = trace_to_analyse(points(1): points(3));
+            A_bump = abs(abs(max(bump)) - abs(min(bump)));
+        end
     end
 end
 
