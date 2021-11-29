@@ -234,6 +234,11 @@ end
 % smoother_trace_to_analyse = smooth(trace_to_analyse, SR * 0.001);
 % Find peaks of the long one
 [~, ap_locs_long, ~] = findpeaks(trace_to_analyse, 'MinPeakHeight', 5, 'MinPeakDistance', min_distance, 'MaxPeakWidth', max_width);
+if isempty(ap_locs_long) % if there's no peak detected, delete max_width
+    [~, ap_locs_long, ~] = findpeaks(trace_to_analyse, 'MinPeakHeight', 5, 'MinPeakDistance', min_distance);
+    disp('peak for phase plot re-checked')
+end
+
 
 %
 first_AP = trace_to_analyse(ap_locs_long(1)-50:ap_locs_long(1)+50 -1);
@@ -307,7 +312,8 @@ end
 %% SAG ratio
 SAG_R = (Vm - sag_p) / (Vm - ss);
 SAG_D = (ss - sag_p);
-disp(['good cell : ', name])
+disp(['##################',...
+    ' good cell : ', name, ' #############'])
 varargout{1}  = FR;
 varargout{2}  = amp_AP;
 varargout{3}  = width_AP;
