@@ -82,6 +82,7 @@ for i_data  = 1: n_steps
        % Sag ratio
       sag_p = min(this_data(finish_bsl:finish_evk));
       ss = median(this_data(finish_evk - ((50 * SR) / 1000):finish_evk -1));
+      this_step_Vm = median(this_data(1:finish_bsl-1,1));
       abs_Vm = abs(Vm);
       abs_ss = abs(ss);
       Ri = abs(((abs_ss - abs_Vm)*10^-3) / (pulses(i_data)*10^-9)) /1000; % MOhms
@@ -310,7 +311,7 @@ if do_plotting
 end
 
 %% SAG ratio
-SAG_R = (Vm - sag_p) / (Vm - ss);
+SAG_R = (this_step_Vm - sag_p) / (this_step_Vm - ss);
 SAG_D = (ss - sag_p);
 disp(['##################',...
     ' good cell : ', name, ' #############'])
