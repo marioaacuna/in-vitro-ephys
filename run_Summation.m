@@ -47,6 +47,7 @@ end
 if unique_datapath
     DATA = run_analysis(data_path, experimenter_ID, p, do_plotting, recording_date);
 else
+    keyboard
     DATA = table();
     for i_folder = 1:length(folders_to_analyse)
         data = run_analysis(data_path{i_folder}, experimenter_ID, p, do_plotting, recording_date);
