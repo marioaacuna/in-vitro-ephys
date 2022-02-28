@@ -145,114 +145,79 @@ end
         is_outwave = cell2mat(cellfun(@(x) endsWith(x, 'outwave.ibw'), files_in_folder, 'UniformOutput', false));
         outwaves_files = files_in_folder(is_outwave);
         outwave_identifier = GC.set_string_outwave_selection.(experimenter_ID);
-        %% Run analysis
-        sweep_ids = cell(0,0);
-        amp_EPSP =  cell(0,0);
-        width_EPSP =  cell(0,0);
-        rest_Vm =  cell(0,0);
-        Area =  cell(0,0);
-        slope_EPSP =  cell(0,0);
-        Ratio =  cell(0,0);
-        I_sweeps_EPSP =  cell(0,0);
-        decaytime_EPSP =  cell(0,0);
-        % do_plotting = 0;
-        names = cell(length(files_to_take),1);
-        for i_exp = 1:length(files_to_take)
-            try
-                this_exp = files_to_take{i_exp};
-                file_to_read = os.path.join(data_path,this_exp);
-                D = IBWread(file_to_read); % read Voltage traces
-                str_V = strsplit(this_exp,str_exptr);% first characters of the voltage filethat need to match to the Current file
-                start_str_v = [str_V{1}, outwave_identifier] ;
-                outwave_file_start= char(outwaves_files(startsWith(outwaves_files, start_str_v)));
-                % check for correct identifier
-                if isempty(outwave_file_start)
-                    start_str_v = [str_V{1}, str_exptr] ;
-                    outwave_file_start= char(outwaves_files(startsWith(outwaves_files, start_str_v)));
-                end
-                outwave_file = os.path.join(data_path,outwave_file_start);
-                O =  IBWread(outwave_file); % read Current traces
-                I_traces = O.y;
-                data = D.y;
-                
-                [sweep_id, amp, I_sweeps, ~, ~, ~, rat, vm, ar] = Analysis_workflow.EPSP_summation_analysis(experimenter_ID,  data,I_traces, do_plotting, this_exp, p);
-                % Output for all experiments on this folder
-                
-%                 sweep_ids(i_exp) = {sweep_id};
-%                 amp_EPSP(i_exp) = {amp};
-% %                 width_EPSP(i_exp) = {wd} ;
-%                 rest_Vm(i_exp) = {vm};
-%                 Area(i_exp) = {ar};
-% %                 slope_EPSP(i_exp) = {slope};
-%                 Ratio(i_exp) = {rat};
-%                 I_sweeps_EPSP(i_exp) = {I_sweeps};
-% %                 decaytime_EPSP(i_exp) = {decay};
-%                 
-% %                 names(i_exp) = {this_exp};
-                %%
-                
-%                 names_idx = cellfun(@(x) ~isempty(x), names);
-                NAMES = this_exp;
-                
-                
-                seps = strsplit(data_path, '\');
-                this_folder = (seps{end});
-                if strcmp(this_folder, 'data') % For niels' data was something weird.
-                    this_folder = recording_date{1};
-                end
-                
-                if isempty(NAMES)
-                    %             keyboard
-                    disp(['File/cell: ', this_folder, ' has no trials'])
-                    this_table = [];
-                    return
-                end
-                % Name_excel
-                name_excel = this_folder;
-%                 var_names = {'Sweeps ID', 'Amplitude(pA)', 'Amplitude(mV)', 'Vm', 'Ratio', 'Area(ms*mV)'};
-                
-                this_table = table(sweep_id, I_sweeps, amp, vm, rat, ar);
-                
-                
-                
-%                 this_date_table = table(repmat({this_folder}, size(sweep_id,2),1), 'VariableNames', {'Date/Cell'});
-%                 % Name sheet
-                name_sheet = NAMES;
-% %                 names_table = cell2table(NAMES, 'VariableNames', {'trials'});
-%                 Sweeps_table = array2table(sweep_id, 'VariableNames',{'Sweep ids'});
-%                 Amp_table = array2table(amp, 'VariableNames', {'Amplitude'});
-%                 Ratiotable = array2table(rat, 'VariableNames',{'Ratio'});
-%                 I_Amp_table = array2table(I_sweeps, 'VariableNames', {'Inj_Amplitude'});
-%                 Vm_table = array2table(vm, 'VariableNames', {'Vm'});
-%                 Area_table = array2table(ar, 'VariableNames', {'Area (ms*mV)'});
-%              
-%                 this_table = [ Sweeps_table,I_Amp_table, Amp_table,  Vm_table, Ratiotable, Area_table];
-                filepath = os.path.join(GC.path_putput_AP_analysis.(experimenter_ID),'Summation_Analyis');
-                
-                
-                if ~exist(filepath, 'dir')
-                    mkdir(filepath)
-                end
-                filename_xlsx = os.path.join(filepath,  [name_excel,'.xlsx']);
-                
-                writetable(this_table,filename_xlsx,'Sheet',name_sheet, 'Range', 'B1')
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-            catch ME
-%                 disp(ME.message)
-                continue
-            end
-            
+        if  strcmp(experimenter_ID, 'Liselot') 
+            outwave_identifier = {'I_', 'V_'};
         end
-        
+        if length(outwave_identifier) >1
+            run_more = 1;
+            out_id = outwave_identifier;
+        else
+            run_more = 0;
+            out_id = outwave_identifier;
+        end
+            
+        %% Run analysis
+        % do_plotting = 0;
+%         names = cell(length(files_to_take),1);
+        for i_id = 1:length(outwave_identifier)
+            for i_exp = 1:length(files_to_take)
+                try
+                    this_exp = files_to_take{i_exp};
+                    file_to_read = os.path.join(data_path,this_exp);
+                    D = IBWread(file_to_read); % read Voltage traces
+                    str_V = strsplit(this_exp,str_exptr);% first characters of the voltage filethat need to match to the Current file
+                    % Do this when there's more than 1 headstage data
+                    if run_more
+                        this_id = out_id{i_id};
+                    else
+                        this_id = out_id;
+                    end
+                    start_str_v = [str_V{1}, this_id] ;
+                    outwave_file_start= char(outwaves_files(startsWith(outwaves_files, start_str_v)));
+                    % check for correct identifier
+                    if isempty(outwave_file_start)
+                        start_str_v = [str_V{1}, str_exptr] ;
+                        outwave_file_start= char(outwaves_files(startsWith(outwaves_files, start_str_v)));
+                    end
+                    outwave_file = os.path.join(data_path,outwave_file_start);
+                    O =  IBWread(outwave_file); % read Current traces
+                    I_traces = O.y;
+                    data = D.y;
+                    [sweep_id, amp, I_sweeps, ~, ~, ~, rat, vm, ar] = Analysis_workflow.EPSP_summation_analysis(experimenter_ID,  data,I_traces, do_plotting, this_exp, p);
+                    NAMES = this_exp;
+                    seps = strsplit(data_path, '\');
+                    this_folder = (seps{end});
+                    if strcmp(this_folder, 'data') % For niels' data was something weird.
+                        this_folder = recording_date{1};
+                    end
+                    
+                    if isempty(NAMES)
+                        %             keyboard
+                        disp(['File/cell: ', this_folder, ' has no trials'])
+                        this_table = [];
+                        return
+                    end
+                    % Name_excel
+                    name_excel = this_folder;
+                    %                 var_names = {'Sweeps ID', 'Amplitude(pA)', 'Amplitude(mV)', 'Vm', 'Ratio', 'Area(ms*mV)'};
+                    
+                    this_table = table(sweep_id, I_sweeps, amp, vm, rat, ar);
+                    
+                    name_sheet = NAMES;
+                    filepath = os.path.join(GC.path_putput_AP_analysis.(experimenter_ID),'Summation_Analyis');
+                    if ~exist(filepath, 'dir')
+                        mkdir(filepath)
+                    end
+                    filename_xlsx = os.path.join(filepath,  [name_excel,'.xlsx']);
+                    
+                    writetable(this_table,filename_xlsx,'Sheet',name_sheet, 'Range', 'B1')
+                catch ME
+                    %                 disp(ME.message)
+                    continue
+                end
+                
+            end
+        end
         done = 1;
     end
 

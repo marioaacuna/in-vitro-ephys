@@ -203,8 +203,13 @@ if is_only_1_protocol
         % Keep transitions from rising to falling
         pos_zx = zx(yx(:,1)>=0 & yx(:,2)<0);
         
-        
-        epsp_to_area = this_EPSP_short(1:pos_zx(3));
+        if size(pos_zx,1) == 2
+            epsp_to_area = this_EPSP_short(1:pos_zx(2)); 
+        elseif size(pos_zx,1) >= 3
+            epsp_to_area = this_EPSP_short(1:pos_zx(3));
+        elseif size(pos_zx,1) == 1
+            epsp_to_area = this_EPSP_short(1:end);
+        end
         this_area = sum(epsp_to_area); %trapz(epsp_to_area)
         
         if do_plotting
@@ -225,11 +230,11 @@ if is_only_1_protocol
         % EPSP parameters
         Amp(i_data) = this_amp;
         Ratio(i_data) = this_amp/this_amp;  
-        Rise_time(i_data) = [];%rise_time;
-        Decay_time(i_data) = [];%decay_time;
-        Slope(i_data) =[]; %slope;
+%         Rise_time(i_data) = [];%rise_time;
+%         Decay_time(i_data) = [];%decay_time;
+%         Slope(i_data) =[]; %slope;
         Width(i_data) = w;
-        Onset(i_data) = [];%this_onset; % to be calculated
+%         Onset(i_data) = [];%this_onset; % to be calculated
         Sweep_ids(i_data) = i_data;
         
     end
@@ -327,9 +332,12 @@ else
         yx = [F_derivative(zx) F_derivative(zx+1)];
         % Keep transitions from rising to falling
         pos_zx = zx(yx(:,1)>=0 & yx(:,2)<0);
-        
         idx_to_take = 2*n_peaks_this_protocol -1;
-        epsp_to_area = this_EPSP_short(1:pos_zx(idx_to_take));
+        if idx_to_take > length(pos_zx)
+            epsp_to_area = this_EPSP_short(1:pos_zx(end));
+        else
+            epsp_to_area = this_EPSP_short(1:pos_zx(idx_to_take));
+        end
         this_area = sum(epsp_to_area); %trapz(epsp_to_area)
         
         
