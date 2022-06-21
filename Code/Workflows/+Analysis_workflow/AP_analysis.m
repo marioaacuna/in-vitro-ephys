@@ -26,7 +26,7 @@ for i_p = 1 : current_steps
         pulses(i_p) = 0;
     end
 end
-end
+% end
 this_pulse_start = 1000* (find(I_traces(:,1) ~= 0,1, 'first') -1) / SR; % start pulse in ms
 this_duration_step = round(sum(I_traces(:,i_p) == this_pulse_points(2))) -1;
 duration_ms = 1000 * this_duration_step / (size(I_traces,1) / p{2});
