@@ -35,6 +35,8 @@ So far we can analyse:
 close all force hidden; 
 clc;
 clear;
+rmpath(pwd)
+addpath(genpat('PATH/TO/YOUR/REPO'))
 cd('PATH/TO/YOUR/REPO') % To be changed (add in repository)
 run_in_vitro_ephys_analysis()
 ```
