@@ -38,7 +38,7 @@ clear;
 cd('PATH/TO/YOUR/REPO') % To be changed (add in repository)
 run_in_vitro_ephys_analysis()
 ```
-# Afterwards you just need to click on the favorite icon and it will run automatically
+Afterwards you just need to click on the favorite icon and it will run automatically
 #
 	- This will run an app where you can select what to analyse
 		- For AP analysis, a new app will open and you have to select the experimenter name
