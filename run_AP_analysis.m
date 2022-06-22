@@ -17,13 +17,20 @@ switch experimenter_ID
         data_path = os.path.join(data_path_root, recording_date{1}, 'traces');
     case {'Liselot', 'Liselot_setup_1'}
         data_path = os.path.join(data_path_root, '2. opto-5HT7', recording_date{1}, [recording_date{1},'.data']);
-    case 'Sri'
+    case {'Sri', 'Falk_et_at'}
         data_path = os.path.join(data_path_root, recording_date{1});
-    case 'Falk_et_at'
+    case 'Franziska'
         data_path = os.path.join(data_path_root, recording_date{1});
     otherwise
         keyboard 
 end
+% for some experiments, it's important to see neurons that do not fire
+if strcmp(experimenter_ID, 'Franziska')
+    take_astrocyte_shape = 1; % will also take info eventho no peaks are gonna be found
+else
+    take_astrocyte_shape = 0;
+end
+
 % data_path = 'M:\Mario\Fede\traces'; % To be changed later
 data_dir = dir(data_path);
 % Pick animals
@@ -34,7 +41,7 @@ files_in_folder = natsort(files_in_folder);
 
 % Isolate the files to analyze
 str_exptr = GC.string_file_selection.(experimenter_ID);
-if any(strcmp(experimenter_ID, {'Niels', 'Sri', 'Liselot_setup_1','Fede_setup_1', 'Falk_et_at'})) 
+if any(strcmp(experimenter_ID, {'Niels', 'Sri', 'Liselot_setup_1','Fede_setup_1', 'Falk_et_at', 'Franziska'})) 
    is_Amp = cell2mat(cellfun(@(x) sum(ismember(x,str_exptr)) == length(str_exptr)+1 && ~endsWith(x, 'outwave.ibw'), files_in_folder, 'UniformOutput', false));
 else
     is_Amp = cell2mat(cellfun(@(x) sum(ismember(x,str_exptr)) == length(str_exptr) && ~endsWith(x, 'outwave.ibw'), files_in_folder, 'UniformOutput', false));
@@ -90,7 +97,7 @@ for i_exp = 1:length(files_to_take)
         end
         data = D.y;
         
-        [FR, AM, W, Vm, Ri, thr, sr, bump,  pulses, sag_d, a_phase, ap_phase, der_phase, vel_depo, vel_repo, tau_mb, adapt_index, burst_freq, flag] = Analysis_workflow.AP_analysis(experimenter_ID,  data,I_traces, do_plotting, this_exp, p);
+        [FR, AM, W, Vm, Ri, thr, sr, bump,  pulses, sag_d, a_phase, ap_phase, der_phase, vel_depo, vel_repo, tau_mb, adapt_index, burst_freq, flag] = Analysis_workflow.AP_analysis(experimenter_ID,  data,I_traces, do_plotting, this_exp, p,take_astrocyte_shape);
 %         all_data = Analysis_workflow.AP_analysis(experimenter_ID,  data,I_traces, do_plotting, this_exp, p);
         if flag % this is to avoid adding new data when the recording was not good
            continue

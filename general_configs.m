@@ -151,6 +151,18 @@ function GC = general_configs()
     GC.path_output_EPSP_analysis.(experimenter_ID) = '';%['N:\Niels\Igor\EPSP_analysis\'];
 
 
+    experimenter_ID = 'Franziska';
+    GC.raw_data_root_path.(experimenter_ID) = 'N:\Franziska';
+    GC.string_file_selection.(experimenter_ID) = 'Tuft';
+    GC.path_putput_AP_analysis.(experimenter_ID) = 'N:\Franziska\Ephys_data_analysis';
+    GC.inter_pulse_interval.(experimenter_ID) = 100;
+    GC.current_steps.(experimenter_ID) = [-4,-3,-2,-1,0,1,2,3,4,5];
+    GC.set_string_outwave_selection.(experimenter_ID) = 'I1';
+    GC.path_output_EPSP_analysis.(experimenter_ID) = '';%['N:\Niels\Igor\EPSP_analysis\'];
+
+
+
+
 
     
 

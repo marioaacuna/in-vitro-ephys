@@ -1,4 +1,4 @@
-function varargout = AP_analysis(experimenter_ID,V_traces, I_traces, do_plotting, name, p)
+function varargout = AP_analysis(experimenter_ID,V_traces, I_traces, do_plotting, name, p, take_astrocyte)
 % Parse inputs
 SR = p{1};
 step_duration = p{4} / 1000;
@@ -47,10 +47,21 @@ n_peaks = FR;
 % finish_bsl = 800;
 % finish_evk = 7*800+5;
 % duration = 0.6;
-min_distance = 20;
-max_width = 300;
-% AP_threshold = 20;
-AP_threshold = 30;
+if ~take_astrocyte
+    min_distance = 20;
+    max_width = 300;
+    % AP_threshold = 20;
+    AP_threshold = 30;
+    mpkw = 2;
+    min_peak_hight = 5; % for determining single AP afterwards
+else
+    min_distance = 20;
+    max_width = 300;
+    % AP_threshold = 20;
+    AP_threshold = 7.5;% this is a compromise
+    mpkw = 5;
+    min_peak_hight = 0;
+end
 
 %%
 hold on
@@ -64,7 +75,7 @@ for i_data  = 1: n_steps
 %     max_evoked = max(this_data(finish_bsl:finish_bsl+20));
 %     if max_evoked - vm_this_trace > 0, continue, end
     evoked_trace_norm = this_data(finish_bsl : finish_evk)- median_evoked;
-    [peaks, loc, ~] = findpeaks(evoked_trace_norm, 'MinPeakHeight', AP_threshold, 'MinPeakDistance', min_distance, 'MaxPeakWidth', max_width, 'MinPeakWidth', 2);
+    [peaks, loc, ~] = findpeaks(evoked_trace_norm, 'MinPeakHeight', AP_threshold, 'MinPeakDistance', min_distance, 'MaxPeakWidth', max_width, 'MinPeakWidth', mpkw);
 % %     [peaks, loc, w] = findpeaks(this_data,'MinPeakProminence',1, 'MinPeakHeight', mad(this_data(finish_bsl:finish_evk))*1.5, 'MinPeakDistance', min_distance, 'MaxPeakWidth', max_width);\
 %     [peaks, loc, w] = findpeaks(this_data,'MinPeakProminence',0.5, 'MinPeakHeight', std(this_data(origin:finish_bsl))*2, 'MinPeakDistance', min_distance, 'MaxPeakWidth', max_width);
     if do_plotting
@@ -140,12 +151,38 @@ end
 ap_idx = intersect(find(FR), find(~isnan(FR)));
 ap_idx = intersect(ap_idx, find(pulses>0)); % find pulses that are larger than 0 pA to detect an actual AP
 
-if isempty(ap_idx)
+if isempty(ap_idx) && ~take_astrocyte
     disp([name, ' is most probably an ASTROCYTE'])
 %     amp_AP = NaN;width_AP=NaN; Vm=NaN; AP_thr=NaN; SAG_R=NaN; pulses = NaN;
     flag = 1;
     return
-else 
+elseif isempty(ap_idx) && take_astrocyte
+    disp([name, ' Looks like an ASTROCYTE'])
+    flag = 0;
+    varargout{1}  = FR;
+    varargout{2}  = NaN;
+    varargout{3}  = NaN;
+    varargout{4}  = Vm;
+    varargout{5}  = Ri;
+    varargout{6}  = NaN;
+    varargout{7}  = NaN;
+    varargout{8}  = NaN;
+    varargout{9}  = NaN;
+    varargout{10} = NaN;
+    varargout{11} = NaN;% area
+    varargout{12} = NaN(100,1);% phase
+    varargout{13} = NaN(100,1);% der
+    varargout{14} = NaN;
+    varargout{15} = NaN;
+    varargout{16} = NaN;
+    varargout{17} = R_ISI9_ISI1;
+    varargout{18} = burst_freq;
+    varargout{19} = flag;
+
+%     amp_AP = NaN;width_AP=NaN; Vm=NaN; AP_thr=NaN; SAG_R=NaN; pulses = NaN;
+   
+    return
+else
     flag = 0;
 end
 
@@ -236,10 +273,14 @@ end
 % Smooth the long trace
 % smoother_trace_to_analyse = smooth(trace_to_analyse, SR * 0.001);
 % Find peaks of the long one
-[~, ap_locs_long, ~] = findpeaks(trace_to_analyse, 'MinPeakHeight', 5, 'MinPeakDistance', min_distance, 'MaxPeakWidth', max_width);
-if isempty(ap_locs_long) % if there's no peak detected, delete max_width
-    [~, ap_locs_long, ~] = findpeaks(trace_to_analyse, 'MinPeakHeight', 5, 'MinPeakDistance', min_distance);
+[~, ap_locs_long, ~] = findpeaks(trace_to_analyse, 'MinPeakHeight', min_peak_hight, 'MinPeakDistance', min_distance, 'MaxPeakWidth', max_width);
+if isempty(ap_locs_long) && ~take_astrocyte % if there's no peak detected, delete max_width
+    [~, ap_locs_long, ~] = findpeaks(trace_to_analyse, 'MinPeakHeight', min_peak_hight, 'MinPeakDistance', min_distance);
     disp('peak for phase plot re-checked')
+elseif isempty(ap_locs_long) && take_astrocyte % meaning that the amplitude is really small
+    disp('%% Very small AP%%')
+    [~, ap_locs_long] = max(trace_to_analyse);
+
 end
 
 
@@ -301,6 +342,10 @@ ft = fittype('smoothingspline');
 % Fit model to data.
 [fitresult, ~] = fit(pulses(ap_idx(1)-1:ap_idx(end))', n_peaks(ap_idx(1)-1:ap_idx(end)), ft );
 AP_thr = unique(arrayfun(@(y)fzero(@(x)fitresult(x)-1,0),n_peaks(ap_idx(1)-1:ap_idx(end))));
+if AP_thr < 0
+   AP_thr = pulses(ap_idx(1));
+   disp('%%% AP thr was set to first AP current step %%%')
+end
 hold on
 if do_plotting
     plot(pulses(ap_idx(1)-1:ap_idx(end)), n_peaks(ap_idx(1)-1:ap_idx(end)), 'o')
