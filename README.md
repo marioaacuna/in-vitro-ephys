@@ -11,7 +11,7 @@ So far we can analyse:
 - Evoked EPSCs
 - Paired-pulse ratios
 - EPSP summation.
-In future releases:- Spontaneous EPSCs 
+- In future releases:- Spontaneous EPSCs 
 (the detailed information about each of them will come in a future release)
 
 # How to set up your ephys analysis pipeline:
