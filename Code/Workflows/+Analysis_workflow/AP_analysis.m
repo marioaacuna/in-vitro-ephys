@@ -167,7 +167,7 @@ elseif isempty(ap_idx) && take_astrocyte
     varargout{6}  = NaN;
     varargout{7}  = NaN;
     varargout{8}  = NaN;
-    varargout{9}  = NaN;
+    varargout{9}  = pulses;
     varargout{10} = NaN;
     varargout{11} = NaN;% area
     varargout{12} = NaN(100,1);% phase
