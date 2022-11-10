@@ -45,7 +45,7 @@ numEvents = 0;
 % create output array for alpha best fit parameters
 params = zeros(1,4);
 traces = [];
-for ichunk =  60: size(data_reshaped,1)
+for ichunk =  1: size(data_reshaped,1)
     data = data_reshaped(ichunk,:);
     data_d = detrend(data,1);
 

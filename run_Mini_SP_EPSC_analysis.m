@@ -170,7 +170,6 @@ if does_exist
 end
 save(matfilename, 'TRACES')
     
-end
 %% end    
 DONE = 1;
 end
