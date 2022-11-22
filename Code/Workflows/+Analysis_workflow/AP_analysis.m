@@ -216,7 +216,11 @@ AP_loc = ap_locs(1);
 evoked_trace_norm_first_AP_smoothed = smooth(evoked_trace_norm_first_AP, SR * 0.001);
 
 if length(ap_locs) > 1
-    F_derivative = diff(evoked_trace_norm_first_AP_smoothed(AP_loc+2:AP_loc+ (0.06 * SR)));% take 50 ms after the first AP %% 350 / (1/SR) ; % +250 iniially.
+    if (AP_loc+ (0.06 * SR)) > size(evoked_trace_norm_first_AP_smoothed,1) % Exception for FL
+        F_derivative = diff(evoked_trace_norm_first_AP_smoothed(AP_loc+2:size(evoked_trace_norm_first_AP_smoothed,1)));
+    else
+        F_derivative = diff(evoked_trace_norm_first_AP_smoothed(AP_loc+2:AP_loc+ (0.06 * SR)));% take 50 ms after the first AP %% 350 / (1/SR) ; % +250 iniially.
+    end
 elseif length(ap_locs) == 1
      F_derivative = diff(evoked_trace_norm_first_AP_smoothed(AP_loc+2:end));
 end
