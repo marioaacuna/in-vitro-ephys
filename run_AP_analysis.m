@@ -13,7 +13,7 @@ data_path_root =  GC.raw_data_root_path.(experimenter_ID); % This needs to be ad
 toolboxes_to_use = {'Igor2Matlab'};
 toggle_toolbox(toolboxes_to_use, 'on')
 switch experimenter_ID
-    case {'Federica', 'Fede_setup_1', 'Fede_setup_1_5HT7','Niels'}
+    case {'Federica', 'Fede_setup_1', 'Fede_setup_1_5HT7'}
         data_path = os.path.join(data_path_root, recording_date{1}, 'traces');
     case {'Liselot', 'Liselot_setup_1'}
         data_path = os.path.join(data_path_root, '2. opto-5HT7', recording_date{1}, [recording_date{1},'.data']);
@@ -25,6 +25,8 @@ switch experimenter_ID
         year = ['20',recording_date{1}(1:2)];
         folderk = recording_date{1}(1:6);
         data_path = fullfile(data_path_root,year, folderk,recording_date{1});
+    case 'Niels'
+        data_path = os.path.join(data_path_root, recording_date{1});
         
     otherwise
         keyboard 
@@ -173,6 +175,11 @@ AP_phase_table.Properties.VariableNames(1) = {'date'};
 % sz_amp = size(amp_AP_table,1);
 % sz_w = size(width_AP_table,1);
 %%
+outputpath = GC.path_putput_AP_analysis.(experimenter_ID);
+if ~exist(outputpath, 'dir')
+    mkdir(outputpath)
+end
+
 filename_xlsx = os.path.join(GC.path_putput_AP_analysis.(experimenter_ID),['AP_frequency_', experimenter_ID, '.xlsx']);
 
 
