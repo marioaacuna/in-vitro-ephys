@@ -108,11 +108,12 @@ for i_exp = 1:length(files_to_take)
         this_t = strsplit(this_exp, '.');
         this_t = this_t{1};
         TRACES.(['d',char(recording_date{1})]).(this_t) = traces;
+        names(i_exp) = {this_t};
+
     catch ME
         disp(ME.message)
        continue
     end
-   names(i_exp) = {this_exp};
 
 end   
 
@@ -145,8 +146,6 @@ if exist(filename_xlsx, 'file') && overwrite
            
     % Write table
     writetable(this_table,filename_xlsx,'Sheet',1, 'Range', range1) 
-    writetable(AP_phase_table,filename_xlsx,'Sheet','Phase AP trace', 'Range', range2)    
-    writetable(DER_phase_table,filename_xlsx,'Sheet','Phase DER trace', 'Range', range3)   
 else
     if overwrite
         delete(filename_xlsx)    
