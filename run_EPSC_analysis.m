@@ -21,7 +21,9 @@ switch experimenter_ID
         data_path = os.path.join(data_path_root, '10. Norbert', recording_date{1}, [recording_date{1},'.data']);
         unique_datapath = 1;
     case 'Kristina'
-        initial_path = os.path.join(data_path_root, recording_date{1});
+        date_str = strsplit(recording_date{1}, '-');
+        year = ['20',date_str{1}(1:2)];
+        initial_path = os.path.join(data_path_root, year, recording_date{1});
         dir_path = dir(initial_path);
         names_path = {dir_path.name};
         folders_to_analyse = names_path(endsWith(names_path, 'KV'));
