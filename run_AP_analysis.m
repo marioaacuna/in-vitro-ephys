@@ -21,6 +21,11 @@ switch experimenter_ID
         data_path = os.path.join(data_path_root, recording_date{1});
     case 'Franziska'
         data_path = os.path.join(data_path_root, recording_date{1});
+    case 'Kristina'
+        year = ['20',recording_date{1}(1:2)];
+        folderk = recording_date{1}(1:6);
+        data_path = fullfile(data_path_root,year, folderk,recording_date{1});
+        
     otherwise
         keyboard 
 end
