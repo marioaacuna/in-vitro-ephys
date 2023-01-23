@@ -87,9 +87,9 @@ function GC = general_configs()
 
     %
     experimenter_ID = 'Niels';
-    GC.raw_data_root_path.(experimenter_ID) = 'V:\Federica\data\all_data\';
+    GC.raw_data_root_path.(experimenter_ID) = 'N:\Niels\Igor\';
     GC.string_file_selection.(experimenter_ID) = 'Tuft';
-    GC.path_putput_AP_analysis.(experimenter_ID) = 'V:\Federica\Matlab_revised_traces';
+    GC.path_putput_AP_analysis.(experimenter_ID) = 'N:\Niels\Igor\AP_analysis\';
     GC.inter_pulse_interval.(experimenter_ID) = 100;
     GC.current_steps.(experimenter_ID) = [-4,-3,-2,-1,0,1,2,3,4,5];
     GC.set_string_outwave_selection.(experimenter_ID) = 'I1';
