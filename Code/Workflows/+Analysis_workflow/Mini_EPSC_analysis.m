@@ -109,7 +109,10 @@ for ichunk =  1: size(data_reshaped,1)
     clear tempDiff;
     % filter as per Cohen and Miles 2000
     outData = zeros(size(dataFilt));
-   
+    
+    % re-set threshodold (delete this line if you think it clears out too many events)
+    parameters.derThresh = 4*std(filt_data);
+
     if PSPsDown
         for index = 2:length(dataFilt)
             if dataDerFilt(index - 1) < 0
@@ -332,7 +335,12 @@ for ichunk =  1: size(data_reshaped,1)
         plot(dataFilt)
         hold on
         x =  round(wherepeaks_to_plot);
-        plot(x, dataFilt(x), 'r*')
+        if x == 0
+            plot (dataFilt)
+        else
+            plot(x, dataFilt(x), 'r*')
+        end
+        ylim([-20 5])
         drawnow
         hold off
     else
