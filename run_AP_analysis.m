@@ -49,7 +49,30 @@ str_exptr = GC.string_file_selection.(experimenter_ID);
 if any(strcmp(experimenter_ID, {'Niels', 'Sri', 'Liselot_setup_1','Fede_setup_1', 'Falk_et_at', 'Franziska'})) 
    is_Amp = cell2mat(cellfun(@(x) sum(ismember(x,str_exptr)) == length(str_exptr)+1 && ~endsWith(x, 'outwave.ibw'), files_in_folder, 'UniformOutput', false));
 else
-    is_Amp = cell2mat(cellfun(@(x) sum(ismember(x,str_exptr)) == length(str_exptr) && ~endsWith(x, 'outwave.ibw'), files_in_folder, 'UniformOutput', false));
+%     is_Amp = cell2mat(cellfun(@(x) sum(ismember(x,str_exptr)) == length(str_exptr) && ~endsWith(x, 'outwave.ibw'), files_in_folder, 'UniformOutput', false));
+    is_Amp_temp = cell2mat(cellfun(@(x) endsWith(x, 'outwave.ibw'), files_in_folder, 'UniformOutput', false ));
+    temp_files =files_in_folder(is_Amp_temp);
+    temp_idx = cellfun(@(x) strsplit(x, '_'), temp_files, 'UniformOutput', false);
+    % extract the identifiers
+    identifiers = cell(0,0);
+    for iidx = 1:numel(temp_idx)
+        iidxname = temp_idx{iidx};
+        this_name = iidxname{1};
+        identifiers(iidx) = {this_name};
+    end
+  is_Amp = false(length(files_in_folder),1);
+    for ifile = 1:numel(files_in_folder)
+        this_file = files_in_folder{ifile};
+        this_file = strsplit(this_file, '.');
+        this_file = this_file{1};
+        for iident = 1: numel(identifiers)
+            this_identifier = identifiers{iident};
+            if all(ismember(this_file, this_identifier))
+                is_Amp(ifile) = 1;
+            end
+        end
+    end
+    
 end
 files_to_take = files_in_folder(is_Amp);
 % is_outwave = cell2mat(cellfun(@(x) sum(ismember(x,str_exptr)) == length(str_exptr) && endsWith(x, 'outwave.ibw'), files_in_folder, 'UniformOutput', false));
