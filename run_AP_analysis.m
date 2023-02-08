@@ -84,6 +84,7 @@ outwave_identifier = GC.set_string_outwave_selection.(experimenter_ID);
 %% Run analysis
 FR_AP = [];%NaN(length(GC.current_steps.(experimenter_ID)),1);
 amp_AP = [];
+amp_AP_fromTrh = []; % this is the AP amplitude from voltage threshold
 width_AP = [];
 rest_Vm = [];
 input_R = [];
@@ -127,13 +128,14 @@ for i_exp = 1:length(files_to_take)
         end
         data = D.y;
         
-        [FR, AM, W, Vm, Ri, thr, sr, bump,  pulses, sag_d, a_phase, ap_phase, der_phase, vel_depo, vel_repo, tau_mb, adapt_index, burst_freq, flag] = Analysis_workflow.AP_analysis(experimenter_ID,  data,I_traces, do_plotting, this_exp, p,take_astrocyte_shape);
+        [FR, AM,AM_fromAPthr, W, Vm, Ri, thr, sr, bump,  pulses, sag_d, a_phase, ap_phase, der_phase, vel_depo, vel_repo, tau_mb, adapt_index, burst_freq, flag] = Analysis_workflow.AP_analysis(experimenter_ID,  data,I_traces, do_plotting, this_exp, p,take_astrocyte_shape);
 %         all_data = Analysis_workflow.AP_analysis(experimenter_ID,  data,I_traces, do_plotting, this_exp, p);
         if flag % this is to avoid adding new data when the recording was not good
            continue
         end
         FR_AP = [FR_AP, FR];
         amp_AP = [amp_AP, AM];
+        amp_AP_fromTrh = [amp_AP_fromTrh,AM_fromAPthr];
         width_AP = [width_AP, W];
         rest_Vm = [rest_Vm, Vm];
         input_R = [input_R, Ri];
@@ -172,6 +174,7 @@ to_delete = length(~isnan(FR_AP(:,1))) - length(pulses_str);
 FR_AP = FR_AP(1:end-to_delete,:);
 FR_AP_table = array2table(FR_AP', 'VariableNames',pulses_str);
 amp_AP_table = array2table(amp_AP', 'VariableNames', {'Amplitude'});
+amp_AP_thr_table = array2table(amp_AP_fromTrh', 'VariableNames', {'Amplitude_from_thr'}); 
 width_AP_table = array2table(width_AP', 'VariableNames',{'Max 1st AP width'});
 Vm_table = array2table(rest_Vm', 'VariableNames',{'Membrane potential'});
 Ri_table = array2table(input_R', 'VariableNames',{'Input Resistance (MOhm)'});
@@ -207,7 +210,7 @@ filename_xlsx = os.path.join(GC.path_putput_AP_analysis.(experimenter_ID),['AP_f
 
 
 %%
-this_table = [this_date_table, names_table,FR_AP_table, amp_AP_table,width_AP_table, Vm_table, Ri_table, Firing_threshold_table, ...
+this_table = [this_date_table, names_table,FR_AP_table, amp_AP_table,amp_AP_thr_table, width_AP_table, Vm_table, Ri_table, Firing_threshold_table, ...
                 SAG_ratio_table, SAG_diff_table, Bump_table, Phase_area_table, Vel_depo_table, Vel_repo_table, Tau_mb_table, Adapt_idx, Burst_freq_table];
 if exist(filename_xlsx, 'file') && overwrite
     original = readtable(filename_xlsx);

@@ -304,6 +304,22 @@ first_AP = trace_to_analyse(ap_locs_long(1)-50:ap_locs_long(1)+50 -1);
 % trace_new_phase = trace_new_phase(2:end);
 der_first = gradient(first_AP)./ (1000/SR); % dV/dt (mV/ms); We use gradient better, cuz it does centered-based diff
 
+% check in case more than 1 AP was in this trace
+% threshold for derivative of AP : 5 mv/ms
+thr_der  =  5;
+identified_AP_thrs = find(diff(der_first>thr_der) == 1); % this is going to be where the AP threshold in mV sits
+nr_possible_APs = length(identified_AP_thrs);
+
+% take always the first AP
+if nr_possible_APs > 1
+    % new first_AP needs to be of the same length
+    first_AP_temp = NaN(size(first_AP));
+    first_AP_temp(1:identified_AP_thrs(2)) = first_AP(1:identified_AP_thrs(2));
+    first_AP  = first_AP_temp;
+    der_first = gradient(first_AP)./ (1000/SR); % dV/dt (mV/ms); We use gradient better, cuz it does centered-based diff
+end
+
+AP_amplitude_from_AP_threshold = max(first_AP)- first_AP(identified_AP_thrs(1));
 
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%
 % time_AP = linspace(1000/SR, length(first_AP)*1000 / SR, length(first_AP));
@@ -317,7 +333,18 @@ der_first = gradient(first_AP)./ (1000/SR); % dV/dt (mV/ms); We use gradient bet
 %
 % Calculate area phase
 AP_to_phase = first_AP;
-area_phase = polyarea(AP_to_phase,der_first);
+
+% this is a modification of polyarea that will take nan values in case
+% there are some
+[x_temp,nshifts] = shiftdim(AP_to_phase);
+y_temp = shiftdim(der_first);
+siz = size(AP_to_phase);
+area_temp = reshape(abs(nansum( (x_temp([2:siz(1) 1],:) - x_temp(:,:)).* ...
+    (y_temp([2:siz(1) 1],:) + y_temp(:,:)))/2),[1 siz(2:end)]);
+area_phase = shiftdim(area_temp,-nshifts);
+
+% area_phase = polyarea(AP_to_phase(1:find(~isnan(AP_to_phase),1, 'last')-1),der_first(~isnan(der_first)));
+
 % get the max and min of speed (depol and repol phases, respectively)
 speed_depo = max(der_first);
 speed_repo = abs(min(der_first));
@@ -371,23 +398,24 @@ disp(['##################',...
     ' good cell : ', name, ' #############'])
 varargout{1}  = FR;
 varargout{2}  = amp_AP;
-varargout{3}  = width_AP;
-varargout{4}  = Vm;
-varargout{5}  = Ri;
-varargout{6}  = AP_thr;
-varargout{7}  = SAG_R;
-varargout{8}  = A_bump;
-varargout{9}  = pulses;
-varargout{10} = SAG_D;
-varargout{11} = area_phase;
-varargout{12} = AP_to_phase;
-varargout{13} = der_first;
-varargout{14} = speed_depo;
-varargout{15} = speed_repo;
-varargout{16} = tau_membrane;
-varargout{17} = R_ISI9_ISI1;
-varargout{18} = burst_freq;
-varargout{19} = flag;
+varargout{3}  = AP_amplitude_from_AP_threshold;
+varargout{4}  = width_AP;
+varargout{5}  = Vm;
+varargout{6}  = Ri;
+varargout{7}  = AP_thr;
+varargout{8}  = SAG_R;
+varargout{9}  = A_bump;
+varargout{10}  = pulses;
+varargout{11} = SAG_D;
+varargout{12} = area_phase;
+varargout{13} = AP_to_phase;
+varargout{14} = der_first;
+varargout{15} = speed_depo;
+varargout{16} = speed_repo;
+varargout{17} = tau_membrane;
+varargout{18} = R_ISI9_ISI1;
+varargout{19} = burst_freq;
+varargout{20} = flag;
 
 
 
