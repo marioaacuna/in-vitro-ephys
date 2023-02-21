@@ -165,22 +165,24 @@ elseif isempty(ap_idx) && take_astrocyte
     varargout{1}  = FR;
     varargout{2}  = NaN;
     varargout{3}  = NaN;
-    varargout{4}  = Vm;
-    varargout{5}  = Ri;
-    varargout{6}  = NaN;
+    varargout{4}  = NaN;
+    varargout{5}  = Vm;
+    varargout{6}  = Ri;
     varargout{7}  = NaN;
     varargout{8}  = NaN;
-    varargout{9}  = pulses;
-    varargout{10} = NaN;
-    varargout{11} = NaN;% area
-    varargout{12} = NaN(100,1);% phase
-    varargout{13} = NaN(100,1);% der
-    varargout{14} = NaN;
+    varargout{9}  = NaN;
+    varargout{10}  = pulses;
+    varargout{11} = NaN;
+    varargout{12} = NaN;% area
+    varargout{13} = NaN(100,1);% phase
+    varargout{14} = NaN(100,1);% der
     varargout{15} = NaN;
     varargout{16} = NaN;
-    varargout{17} = R_ISI9_ISI1;
-    varargout{18} = burst_freq;
-    varargout{19} = flag;
+    varargout{17} = NaN;
+    varargout{18} = R_ISI9_ISI1;
+    varargout{19} = burst_freq;
+    varargout{20} = flag;
+    varargout{21} = NaN;
 
 %     amp_AP = NaN;width_AP=NaN; Vm=NaN; AP_thr=NaN; SAG_R=NaN; pulses = NaN;
    
@@ -318,8 +320,8 @@ if nr_possible_APs > 1
     first_AP  = first_AP_temp;
     der_first = gradient(first_AP)./ (1000/SR); % dV/dt (mV/ms); We use gradient better, cuz it does centered-based diff
 end
-
-AP_amplitude_from_AP_threshold = max(first_AP)- first_AP(identified_AP_thrs(1));
+AP_voltage_thr = first_AP(identified_AP_thrs(1));
+AP_amplitude_from_AP_threshold = max(first_AP)- AP_voltage_thr;
 
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%
 % time_AP = linspace(1000/SR, length(first_AP)*1000 / SR, length(first_AP));
@@ -416,6 +418,7 @@ varargout{17} = tau_membrane;
 varargout{18} = R_ISI9_ISI1;
 varargout{19} = burst_freq;
 varargout{20} = flag;
+varargout{21} = AP_voltage_thr;
 
 
 
